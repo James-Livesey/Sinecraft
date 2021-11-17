@@ -1,0 +1,3 @@
+logo.png:
+  type: bopti-image
+  name: img_logo

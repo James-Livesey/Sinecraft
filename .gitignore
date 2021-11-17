@@ -1,0 +1,6 @@
+/build-fx
+/build-cg
+/*.g1a
+/*.g3a
+__pycache__/
+.vscode
