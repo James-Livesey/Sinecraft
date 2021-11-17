@@ -2,7 +2,7 @@
 
 #include "coords.h"
 
-#define SQUARE(x) x * x
+#define SQUARE(x) (x * x)
 
 CartesianVector coords_defaultCartesian() {
     return CartesianVector {.x = 0, .y = 0, .z = 0};

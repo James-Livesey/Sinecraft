@@ -3,6 +3,8 @@
 #include <gint/display-fx.h>
 #include <gint/keyboard.h>
 
+#include "camera.h"
+
 extern bopti_image_t img_logo;
 
 void main() {
