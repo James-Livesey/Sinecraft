@@ -1,22 +1,23 @@
 #include <math.h>
 
 #include "coords.h"
+#include "common.h"
 
 #define SQUARE(x) (x * x)
 
 CartesianVector coords_defaultCartesian() {
-    return CartesianVector {.x = 0, .y = 0, .z = 0};
+    return (CartesianVector) {0, 0, 0};
 }
 
 CartesianVector coords_addCartesian(CartesianVector a, CartesianVector b) {
-    return CartesianVector {.x = a.x + b.x, .y = a.y + b.y, .z = a.z + b.z};
+    return (CartesianVector) {a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
 CartesianVector coords_fromPolar(PolarVector polar) {
-    return CartesianVector {
-        .x = polar.r * sin(polar.incl) * cos(polar.ariz),
-        .y = polar.r * cos(polar.incl),
-        .z = polar.r * sin(polar.incl) * sin(polar.ariz)
+    return (CartesianVector) {
+        polar.r * sin(polar.incl) * cos(polar.ariz),
+        polar.r * cos(polar.incl),
+        polar.r * sin(polar.incl) * sin(polar.ariz)
     };
 }
 
@@ -25,17 +26,17 @@ double coords_getMagnitude(CartesianVector vector) {
 }
 
 PolarVector coords_defaultPolar() {
-    return PolarVector {.r = 0, .incl = M_PI, .ariz = 0};
+    return (PolarVector) {0, PI, 0};
 }
 
 PolarVector coords_addPolar(PolarVector a, PolarVector b) {
-    return PolarVector {.r = a.r + b.r, .incl = a.incl + b.incl, .ariz = a.ariz + b.ariz};
+    return (PolarVector) {a.r + b.r, a.incl + b.incl, a.ariz + b.ariz};
 }
 
 PolarVector coords_fromCartesian(CartesianVector cartesian) {
-    return PolarVector {
-        .r = coords_getMagnitude(cartesian),
-        .incl = atan(sqrt(SQUARE(cartesian.x) + SQUARE(cartesian.z)) / cartesian.y),
-        .ariz = cartesian.x == 0 ? M_PI / 2 : atan(cartesian.z / cartesian.x) + (cartesian.x < 0 ? M_PI : 0)
+    return (PolarVector) {
+        coords_getMagnitude(cartesian),
+        atan(sqrt(SQUARE(cartesian.x) + SQUARE(cartesian.z)) / cartesian.y),
+        cartesian.x == 0 ? PI / 2 : atan(cartesian.z / cartesian.x) + (cartesian.x < 0 ? PI : 0)
     };
 }
