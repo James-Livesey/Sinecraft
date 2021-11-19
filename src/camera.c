@@ -11,33 +11,6 @@
 const int VIEWPORT_WIDTH = 128;
 const int VIEWPORT_HEIGHT = 64;
 
-const CartesianVector POINTS[] = {
-    (CartesianVector) {0, 0, 0},
-    (CartesianVector) {0, 0, 1},
-    (CartesianVector) {0, 1, 0},
-    (CartesianVector) {0, 1, 1},
-    (CartesianVector) {1, 0, 0},
-    (CartesianVector) {1, 0, 1},
-    (CartesianVector) {1, 1, 0},
-    (CartesianVector) {1, 1, 1},
-    (CartesianVector) {2, 0, 0},
-    (CartesianVector) {2, 0, 1},
-    (CartesianVector) {2, 1, 0},
-    (CartesianVector) {2, 1, 1},
-    (CartesianVector) {3, 0, 0},
-    (CartesianVector) {3, 0, 1},
-    (CartesianVector) {3, 1, 0},
-    (CartesianVector) {3, 1, 1},
-    (CartesianVector) {1, 1, 0},
-    (CartesianVector) {1, 1, 1},
-    (CartesianVector) {1, 2, 0},
-    (CartesianVector) {1, 2, 1},
-    (CartesianVector) {2, 1, 0},
-    (CartesianVector) {2, 1, 1},
-    (CartesianVector) {2, 2, 0},
-    (CartesianVector) {2, 2, 1}
-};
-
 Camera camera_default() {
     return (Camera) {
         .position = coords_defaultCartesian(),
