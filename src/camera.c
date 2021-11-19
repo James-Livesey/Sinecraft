@@ -105,16 +105,16 @@ void camera_render(Camera camera, World world) {
 
         drawDisplayLine(pixelsToSet[0], pixelsToSet[1], C_BLACK);
         drawDisplayLine(pixelsToSet[0], pixelsToSet[2], C_BLACK);
-        drawDisplayLine(pixelsToSet[0], pixelsToSet[4], C_BLACK);
         drawDisplayLine(pixelsToSet[1], pixelsToSet[3], C_BLACK);
         drawDisplayLine(pixelsToSet[1], pixelsToSet[5], C_BLACK);
         drawDisplayLine(pixelsToSet[2], pixelsToSet[3], C_BLACK);
-        drawDisplayLine(pixelsToSet[2], pixelsToSet[6], C_BLACK);
         drawDisplayLine(pixelsToSet[3], pixelsToSet[7], C_BLACK);
-        drawDisplayLine(pixelsToSet[4], pixelsToSet[5], C_BLACK);
+        drawDisplayLine(pixelsToSet[4], pixelsToSet[0], C_BLACK);
         drawDisplayLine(pixelsToSet[4], pixelsToSet[6], C_BLACK);
+        drawDisplayLine(pixelsToSet[5], pixelsToSet[4], C_BLACK);
         drawDisplayLine(pixelsToSet[5], pixelsToSet[7], C_BLACK);
-        drawDisplayLine(pixelsToSet[6], pixelsToSet[7], C_BLACK);
+        drawDisplayLine(pixelsToSet[6], pixelsToSet[2], C_BLACK);
+        drawDisplayLine(pixelsToSet[7], pixelsToSet[6], C_BLACK);
 
         free(vertices);
     }
