@@ -4,15 +4,29 @@
 #include <gint/keyboard.h>
 
 #include "common.h"
+#include "world.h"
 #include "camera.h"
 
 extern bopti_image_t img_logo;
 
 void main() {
+	World world = world_default();
 	Camera camera = camera_default();
 
 	camera.position.x = -4;
 	camera.position.y = 0.5;
+
+	world_addBlock(&world, (Block) {
+		.position = (CartesianVector) {0, -0.5, 0}
+	});
+
+	world_addBlock(&world, (Block) {
+		.position = (CartesianVector) {1, 0.5, 0}
+	});
+
+	world_addBlock(&world, (Block) {
+		.position = (CartesianVector) {2, -0.5, 0}
+	});
 
 	while (true) {
 		dclear(C_WHITE);

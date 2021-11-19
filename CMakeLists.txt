@@ -13,6 +13,8 @@ set(SOURCES
   src/common.h
   src/coords.h
   src/coords.c
+  src/world.h
+  src/world.c
   src/camera.h
   src/camera.c
   src/main.c

@@ -89,7 +89,7 @@ CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, Cartesian
     );
 }
 
-void camera_moveInAriz(Camera *camera, double distance, double ariz) {
+void camera_moveInAriz(Camera* camera, double distance, double ariz) {
     camera->position = coords_addCartesian(camera->position, coords_fromPolar((PolarVector) {
         distance,
         PI / 2,
