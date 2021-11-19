@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "coords.h"
+#include "world.h"
 
 typedef struct {
     CartesianVector position;
@@ -12,6 +13,7 @@ typedef struct {
 typedef struct {
     int x;
     int y;
+    bool render;
 } DisplayCoords;
 
 Camera camera_default();
@@ -20,6 +22,6 @@ DisplayCoords camera_orthToPersp(double x, double y, double distance, double fov
 CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, CartesianVector cameraPosition, PolarVector cameraHeading);
 
 void camera_moveInAriz(Camera *camera, double distance, double ariz);
-void camera_render(Camera camera);
+void camera_render(Camera camera, World world);
 
 #endif

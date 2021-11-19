@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <math.h>
 #include <gint/display.h>
 #include <gint/display-fx.h>
@@ -5,6 +6,7 @@
 #include "camera.h"
 #include "common.h"
 #include "coords.h"
+#include "world.h"
 
 const int VIEWPORT_WIDTH = 128;
 const int VIEWPORT_HEIGHT = 64;
@@ -54,14 +56,16 @@ double orthToPersp2d(double value, double distance, double fovRad) {
 
 DisplayCoords camera_orthToPersp(double x, double y, double distance, double fovDeg) {
     double fovRad = (fovDeg / 180) * PI;
+    double verticalFovRad = 2 * atan((VIEWPORT_HEIGHT / 2) / ((VIEWPORT_WIDTH / 2) / atan(fovRad / 2)));
 
     if (distance == 0) {
-        return (DisplayCoords) {VIEWPORT_WIDTH / 2, VIEWPORT_HEIGHT / 2};
+        return (DisplayCoords) {VIEWPORT_WIDTH / 2, VIEWPORT_HEIGHT / 2, true};
     }
 
     return (DisplayCoords) {
         orthToPersp2d(x, distance, fovRad) * VIEWPORT_WIDTH,
-        orthToPersp2d(y, distance, fovRad) * VIEWPORT_HEIGHT
+        orthToPersp2d(y, distance, verticalFovRad) * VIEWPORT_HEIGHT,
+        true
     };
 }
 
@@ -97,20 +101,48 @@ void camera_moveInAriz(Camera* camera, double distance, double ariz) {
     }));
 }
 
-void camera_render(Camera camera) {
-    for (unsigned int i = 0; i < sizeof(POINTS) / sizeof(POINTS[0]); i++) {
-        CartesianVector relativePoint = camera_worldSpaceToCameraSpace(POINTS[i], camera.position, camera.heading);
+void drawDisplayLine(DisplayCoords a, DisplayCoords b, color_t colour) {
+    if (!a.render || !b.render) {
+        return;
+    }
 
-        if (relativePoint.x < 0) {
-            continue; // Don't render when behind camera
+    dline(a.x, VIEWPORT_HEIGHT - a.y, b.x, VIEWPORT_HEIGHT - b.y, colour);
+}
+
+void camera_render(Camera camera, World world) {
+    for (unsigned int i = 0; i < world.changedBlockCount; i++) {
+        CartesianVector* vertices = world_getBlockVertices(world.changedBlocks[i]);
+        DisplayCoords pixelsToSet[8];
+
+        for (unsigned int j = 0; j < 8; j++) {
+            pixelsToSet[j] = (DisplayCoords) {0, 0, false};
+
+            CartesianVector relativePoint = camera_worldSpaceToCameraSpace(vertices[j], camera.position, camera.heading);
+
+            if (relativePoint.x < 0) {
+                continue; // Don't render when behind camera
+            }
+
+            DisplayCoords pixelToSet = camera_orthToPersp(relativePoint.z, relativePoint.y, relativePoint.x, camera.fov);
+
+            pixelsToSet[j] = pixelToSet;
+
+            // dpixel(pixelToSet.x, VIEWPORT_HEIGHT - pixelToSet.y, C_BLACK);
         }
 
-        DisplayCoords pixelToSet = camera_orthToPersp(relativePoint.z, relativePoint.y, relativePoint.x, camera.fov);
+        drawDisplayLine(pixelsToSet[0], pixelsToSet[1], C_BLACK);
+        drawDisplayLine(pixelsToSet[0], pixelsToSet[2], C_BLACK);
+        drawDisplayLine(pixelsToSet[0], pixelsToSet[4], C_BLACK);
+        drawDisplayLine(pixelsToSet[1], pixelsToSet[3], C_BLACK);
+        drawDisplayLine(pixelsToSet[1], pixelsToSet[5], C_BLACK);
+        drawDisplayLine(pixelsToSet[2], pixelsToSet[3], C_BLACK);
+        drawDisplayLine(pixelsToSet[2], pixelsToSet[6], C_BLACK);
+        drawDisplayLine(pixelsToSet[3], pixelsToSet[7], C_BLACK);
+        drawDisplayLine(pixelsToSet[4], pixelsToSet[5], C_BLACK);
+        drawDisplayLine(pixelsToSet[4], pixelsToSet[6], C_BLACK);
+        drawDisplayLine(pixelsToSet[5], pixelsToSet[7], C_BLACK);
+        drawDisplayLine(pixelsToSet[6], pixelsToSet[7], C_BLACK);
 
-        if (pixelToSet.x < 0 || pixelToSet.x > VIEWPORT_WIDTH || pixelToSet.y < 0 || pixelToSet.y > VIEWPORT_WIDTH) {
-            continue;
-        }
-
-        dpixel(pixelToSet.x, VIEWPORT_HEIGHT - pixelToSet.y, C_BLACK);
+        free(vertices);
     }
 }

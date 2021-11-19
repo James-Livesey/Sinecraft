@@ -30,40 +30,48 @@ void main() {
 
 	while (true) {
 		dclear(C_WHITE);
-		dimage((128 - img_logo.width) / 2, 10, &img_logo);
 
-		camera_render(camera);
+		camera_render(camera, world);
+		dimage((128 - img_logo.width) / 2, 10, &img_logo);
 
 		dupdate();
 
-		key_event_t keyEvent = pollevent();
+		clearevents();
 
-		if (keyEvent.type == KEYEV_DOWN) {
-			switch (keyEvent.key) {
-				case KEY_MENU:
-					gint_osmenu();
-					break;
+		if (keydown(KEY_MENU) == 1) {
+			gint_osmenu();
+		}
 
-				case KEY_8:
-					camera_moveInAriz(&camera, 0.5, camera.heading.ariz);
-					break;
+		if (keydown(KEY_8)) {
+			camera_moveInAriz(&camera, 0.5, camera.heading.ariz);
+		}
 
-				case KEY_UP:
-					camera.heading.incl -= PI / 16;
-					break;
+		if (keydown(KEY_5)) {
+			camera_moveInAriz(&camera, -0.5, camera.heading.ariz);
+		}
 
-				case KEY_DOWN:
-					camera.heading.incl += PI / 16;
-					break;
+		if (keydown(KEY_4)) {
+			camera_moveInAriz(&camera, 0.5, camera.heading.ariz - (PI / 2));
+		}
 
-				case KEY_LEFT:
-					camera.heading.ariz -= PI / 16;
-					break;
+		if (keydown(KEY_6)) {
+			camera_moveInAriz(&camera, 0.5, camera.heading.ariz + (PI / 2));
+		}
 
-				case KEY_RIGHT:
-					camera.heading.ariz += PI / 16;
-					break;
-			}
+		if (keydown(KEY_UP)) {
+			camera.heading.incl -= PI / 16;
+		}
+
+		if (keydown(KEY_DOWN)) {
+			camera.heading.incl += PI / 16;
+		}
+
+		if (keydown(KEY_LEFT)) {
+			camera.heading.ariz -= PI / 16;
+		}
+
+		if (keydown(KEY_RIGHT)) {
+			camera.heading.ariz += PI / 16;
 		}
 	}
 }
