@@ -10,6 +10,7 @@ include(Fxconv)
 find_package(Gint 2.1 REQUIRED)
 
 set(SOURCES
+  src/flags.h
   src/common.h
   src/coords.h
   src/coords.c
@@ -17,6 +18,8 @@ set(SOURCES
   src/world.c
   src/camera.h
   src/camera.c
+  src/profiling.h
+  src/profiling.c
   src/main.c
   # ...
 )

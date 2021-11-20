@@ -3,10 +3,12 @@
 #include <gint/display.h>
 #include <gint/display-fx.h>
 
+#include "flags.h"
 #include "camera.h"
 #include "common.h"
 #include "coords.h"
 #include "world.h"
+#include "profiling.h"
 
 const int VIEWPORT_WIDTH = 128;
 const int VIEWPORT_HEIGHT = 64;
@@ -83,6 +85,10 @@ void drawDisplayLine(DisplayCoords a, DisplayCoords b, color_t colour) {
 }
 
 void camera_render(Camera camera, World world) {
+    #ifdef FLAG_PROFILING
+    profiling_start(PROFILING_RENDER_TIME);
+    #endif
+
     for (unsigned int i = 0; i < world.changedBlockCount; i++) {
         CartesianVector* vertices = world_getBlockVertices(world.changedBlocks[i]);
         DisplayCoords pixelsToSet[8];
@@ -90,18 +96,38 @@ void camera_render(Camera camera, World world) {
         for (unsigned int j = 0; j < 8; j++) {
             pixelsToSet[j] = (DisplayCoords) {0, 0, false};
 
+            #ifdef FLAG_PROFILING
+            profiling_start(PROFILING_WORLD_TO_CAMERA);
+            #endif
+
             CartesianVector relativePoint = camera_worldSpaceToCameraSpace(vertices[j], camera.position, camera.heading);
+
+            #ifdef FLAG_PROFILING
+            profiling_stop(PROFILING_WORLD_TO_CAMERA);
+            #endif
 
             if (relativePoint.x < 0) {
                 continue; // Don't render when behind camera
             }
 
+            #ifdef FLAG_PROFILING
+            profiling_start(PROFILING_ORTH_TO_PERSP);
+            #endif
+
             DisplayCoords pixelToSet = camera_orthToPersp(relativePoint.z, relativePoint.y, relativePoint.x, camera.fov);
+
+            #ifdef FLAG_PROFILING
+            profiling_stop(PROFILING_ORTH_TO_PERSP);
+            #endif
 
             pixelsToSet[j] = pixelToSet;
 
             // dpixel(pixelToSet.x, VIEWPORT_HEIGHT - pixelToSet.y, C_BLACK);
         }
+
+        #ifdef FLAG_PROFILING
+        profiling_start(PROFILING_DRAW_EDGES);
+        #endif
 
         drawDisplayLine(pixelsToSet[0], pixelsToSet[1], C_BLACK);
         drawDisplayLine(pixelsToSet[0], pixelsToSet[2], C_BLACK);
@@ -116,6 +142,14 @@ void camera_render(Camera camera, World world) {
         drawDisplayLine(pixelsToSet[6], pixelsToSet[2], C_BLACK);
         drawDisplayLine(pixelsToSet[7], pixelsToSet[6], C_BLACK);
 
+        #ifdef FLAG_PROFILING
+        profiling_stop(PROFILING_DRAW_EDGES);
+        #endif
+
         free(vertices);
     }
+
+    #ifdef FLAG_PROFILING
+    profiling_stop(PROFILING_RENDER_TIME);
+    #endif
 }
