@@ -33,16 +33,19 @@ void showProfile() {
 #endif
 
 void main() {
+	bool showLogo = true;
+
 	World world = world_default();
 	Camera camera = camera_default();
 
 	camera.position.x = -4;
-	camera.position.y = 0.5;
+	camera.position.y = 1;
+	camera.position.z = 1;
 
 	for (unsigned int y = 0; y < 3; y++) {
 		for (unsigned int z = 0; z < 3; z++) {
 			world_addBlock(&world, (Block) {
-				.position = (CartesianVector) {0, y - 0.5, z}
+				.position = (CartesianVector) {0, y, z}
 			});
 		}
 	}
@@ -71,7 +74,10 @@ void main() {
 		#endif
 
 		camera_render(camera, world);
-		// dimage((128 - img_logo.width) / 2, 10, &img_logo);
+
+		if (showLogo) {
+			dimage((128 - img_logo.width) / 2, 10, &img_logo);
+		}
 
 		#ifdef FLAG_PROFILING
 		dprint(0, 0, C_BLACK, "%dFPS", 10000 / profiling_getTicks(PROFILING_RENDER_TIME));
@@ -83,6 +89,10 @@ void main() {
 
 		if (keydown(KEY_MENU)) {
 			gint_osmenu();
+		}
+
+		if (keydown(KEY_EXIT)) {
+			showLogo = false;
 		}
 
 		#ifdef FLAG_PROFILING
