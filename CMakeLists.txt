@@ -11,7 +11,10 @@ find_package(Gint 2.1 REQUIRED)
 
 set(SOURCES
   src/flags.h
+  src/lut.h
+  src/lut.c
   src/common.h
+  src/common.c
   src/coords.h
   src/coords.c
   src/world.h

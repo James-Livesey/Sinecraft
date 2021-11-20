@@ -100,27 +100,27 @@ void main() {
 		}
 
 		if (keydown(KEY_4)) {
-			camera_moveInAriz(&camera, 0.5, camera.heading.ariz - (PI / 2));
+			camera_moveInAriz(&camera, 0.5, camera.heading.ariz - 90);
 		}
 
 		if (keydown(KEY_6)) {
-			camera_moveInAriz(&camera, 0.5, camera.heading.ariz + (PI / 2));
+			camera_moveInAriz(&camera, 0.5, camera.heading.ariz + 90);
 		}
 
 		if (keydown(KEY_UP)) {
-			camera.heading.incl -= PI / 16;
+			camera.heading.incl -= 12;
 		}
 
 		if (keydown(KEY_DOWN)) {
-			camera.heading.incl += PI / 16;
+			camera.heading.incl += 12;
 		}
 
 		if (keydown(KEY_LEFT)) {
-			camera.heading.ariz -= PI / 16;
+			camera.heading.ariz -= 12;
 		}
 
 		if (keydown(KEY_RIGHT)) {
-			camera.heading.ariz += PI / 16;
+			camera.heading.ariz += 12;
 		}
 	}
 }

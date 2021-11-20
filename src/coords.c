@@ -3,8 +3,6 @@
 #include "coords.h"
 #include "common.h"
 
-#define SQUARE(x) (x * x)
-
 CartesianVector coords_defaultCartesian() {
     return (CartesianVector) {0, 0, 0};
 }
@@ -22,12 +20,12 @@ CartesianVector coords_multiplyCartesian(CartesianVector a, CartesianVector b) {
 }
 
 CartesianVector coords_fromPolar(PolarVector polar) {
-    double inclSin = sin(polar.incl);
+    double inclSin = common_sin(polar.incl);
 
     return (CartesianVector) {
-        polar.r * inclSin * cos(polar.ariz),
-        polar.r * cos(polar.incl),
-        polar.r * inclSin * sin(polar.ariz)
+        polar.r * inclSin * common_cos(polar.ariz),
+        polar.r * common_cos(polar.incl),
+        polar.r * inclSin * common_sin(polar.ariz)
     };
 }
 
@@ -54,7 +52,7 @@ PolarVector coords_addPolar(PolarVector a, PolarVector b) {
 PolarVector coords_fromCartesian(CartesianVector cartesian) {
     return (PolarVector) {
         coords_getMagnitude(cartesian),
-        acos(cartesian.y / coords_getMagnitude(cartesian)),
-        cartesian.x == 0 ? PI / 2 : atan(cartesian.z / cartesian.x) + PI
+        common_acos(cartesian.y / coords_getMagnitude(cartesian)),
+        cartesian.x == 0 ? 90 : common_atan(cartesian.z / cartesian.x) + 180
     };
 }

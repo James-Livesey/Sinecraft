@@ -13,9 +13,8 @@
 const int VIEWPORT_WIDTH = 128;
 const int VIEWPORT_HEIGHT = 64;
 
-double lastFovDeg = 0;
-double fovRad = 0;
-double verticalFovRad = 0;
+int lastFov = 0;
+int verticalFov = 0;
 
 Camera camera_default() {
     return (Camera) {
@@ -25,19 +24,18 @@ Camera camera_default() {
     };
 }
 
-double orthToPersp2d(double value, double distance, double fovRad) {
-    float v1 = distance * tan(fovRad / 2);
-    float v0 = -v1;
-    float t = INVLERP(v0, v1, value);
+double orthToPersp2d(double value, double distance, double fov) {
+    double v1 = distance * common_tan(fov / 2);
+    double v0 = -v1;
+    double t = INVLERP(v0, v1, value);
 
     return LERP(0, 1, t);
 }
 
-DisplayCoords camera_orthToPersp(double x, double y, double distance, double fovDeg) {
-    if (fovDeg != lastFovDeg) {
-        lastFovDeg = fovDeg;
-        fovRad = (fovDeg / 180) * PI;
-        verticalFovRad = 2 * atan((VIEWPORT_HEIGHT / 2) / ((VIEWPORT_WIDTH / 2) / atan(fovRad / 2)));
+DisplayCoords camera_orthToPersp(double x, double y, double distance, double fov) {
+    if (fov != lastFov) {
+        lastFov = fov;
+        verticalFov = 2 * common_atan((VIEWPORT_HEIGHT / 2) / ((VIEWPORT_WIDTH / 2) / common_tan(fov / 2)));
     }
 
     if (distance == 0) {
@@ -45,14 +43,14 @@ DisplayCoords camera_orthToPersp(double x, double y, double distance, double fov
     }
 
     return (DisplayCoords) {
-        orthToPersp2d(x, distance, fovRad) * VIEWPORT_WIDTH,
-        orthToPersp2d(y, distance, verticalFovRad) * VIEWPORT_HEIGHT,
+        orthToPersp2d(x, distance, fov) * VIEWPORT_WIDTH,
+        orthToPersp2d(y, distance, verticalFov) * VIEWPORT_HEIGHT,
         true
     };
 }
 
 CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, CartesianVector cameraPosition, PolarVector cameraHeading) {
-    cameraHeading.ariz += PI;
+    cameraHeading.ariz += 180;
 
     vector = coords_addCartesian(vector, coords_scaleCartesian(cameraPosition, -1));
 
@@ -60,7 +58,7 @@ CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, Cartesian
     PolarVector pointRotate = {0, 0, 0};
 
     if (vector.x < 0 && vector.z < 0) {
-        pointRotate.ariz += PI;
+        pointRotate.ariz += 180;
     } else if (vector.x < 0) {
         pointMultiply.x = -1;
         pointMultiply.z = -1;
@@ -78,7 +76,7 @@ CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, Cartesian
 void camera_moveInAriz(Camera* camera, double distance, double ariz) {
     camera->position = coords_addCartesian(camera->position, coords_fromPolar((PolarVector) {
         distance,
-        PI / 2,
+        90,
         ariz
     }));
 }
