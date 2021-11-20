@@ -13,6 +13,10 @@
 const int VIEWPORT_WIDTH = 128;
 const int VIEWPORT_HEIGHT = 64;
 
+double lastFovDeg = 0;
+double fovRad = 0;
+double verticalFovRad = 0;
+
 Camera camera_default() {
     return (Camera) {
         .position = coords_defaultCartesian(),
@@ -30,8 +34,11 @@ double orthToPersp2d(double value, double distance, double fovRad) {
 }
 
 DisplayCoords camera_orthToPersp(double x, double y, double distance, double fovDeg) {
-    double fovRad = (fovDeg / 180) * PI;
-    double verticalFovRad = 2 * atan((VIEWPORT_HEIGHT / 2) / ((VIEWPORT_WIDTH / 2) / atan(fovRad / 2)));
+    if (fovDeg != lastFovDeg) {
+        lastFovDeg = fovDeg;
+        fovRad = (fovDeg / 180) * PI;
+        verticalFovRad = 2 * atan((VIEWPORT_HEIGHT / 2) / ((VIEWPORT_WIDTH / 2) / atan(fovRad / 2)));
+    }
 
     if (distance == 0) {
         return (DisplayCoords) {VIEWPORT_WIDTH / 2, VIEWPORT_HEIGHT / 2, true};

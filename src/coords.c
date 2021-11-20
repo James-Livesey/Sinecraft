@@ -22,10 +22,12 @@ CartesianVector coords_multiplyCartesian(CartesianVector a, CartesianVector b) {
 }
 
 CartesianVector coords_fromPolar(PolarVector polar) {
+    double inclSin = sin(polar.incl);
+
     return (CartesianVector) {
-        polar.r * sin(polar.incl) * cos(polar.ariz),
+        polar.r * inclSin * cos(polar.ariz),
         polar.r * cos(polar.incl),
-        polar.r * sin(polar.incl) * sin(polar.ariz)
+        polar.r * inclSin * sin(polar.ariz)
     };
 }
 
