@@ -42,26 +42,19 @@ void main() {
 	camera.position.y = 1;
 	camera.position.z = 1;
 
-	for (unsigned int y = 0; y < 3; y++) {
+	for (unsigned int x = 0; x < 3; x++) {
 		for (unsigned int z = 0; z < 3; z++) {
 			world_addBlock(&world, (Block) {
-				.position = (CartesianVector) {0, y, z},
+				.position = (CartesianVector) {x, 0, z},
 				.type = BLOCK_TYPE_STONE
 			});
 		}
 	}
 
-	// world_addBlock(&world, (Block) {
-	// 	.position = (CartesianVector) {0, -0.5, 0}
-	// });
-
-	// world_addBlock(&world, (Block) {
-	// 	.position = (CartesianVector) {1, 0.5, 0}
-	// });
-
-	// world_addBlock(&world, (Block) {
-	// 	.position = (CartesianVector) {2, -0.5, 0}
-	// });
+	world_addBlock(&world, (Block) {
+		.position = (CartesianVector) {1, 1, 1},
+		.type = BLOCK_TYPE_STONE
+	});
 
 	#ifdef FLAG_PROFILING
 	profiling_init();
