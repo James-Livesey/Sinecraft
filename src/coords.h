@@ -1,6 +1,15 @@
 #ifndef COORDS_H_
 #define COORDS_H_
 
+typedef enum {
+    NX = 0,
+    PX = 1,
+    NY = 2,
+    PY = 3,
+    NZ = 4,
+    PZ = 5
+} Face;
+
 typedef struct {
     double x;
     double y;

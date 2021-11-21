@@ -13,6 +13,15 @@
 const int VIEWPORT_WIDTH = 128;
 const int VIEWPORT_HEIGHT = 64;
 
+const unsigned int FACE_VERTICES[] = {
+    0, 1, 3, 2, // NX
+    5, 4, 6, 7, // PX
+    0, 1, 5, 4, // NY
+    2, 3, 7, 6, // PY
+    0, 4, 6, 2, // NZ
+    1, 5, 7, 3  // PZ
+};
+
 int lastFov = 0;
 int verticalFov = 0;
 
@@ -73,6 +82,77 @@ CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, Cartesian
     );
 }
 
+DisplayCoords getBlockVertex(CartesianVector* vertices, unsigned int vertex, Camera camera, DisplayCoords* cachedDisplayVertices) {
+    if (cachedDisplayVertices[vertex].render) {
+        return cachedDisplayVertices[vertex];
+    }
+
+    #ifdef FLAG_PROFILING
+    profiling_start(PROFILING_WORLD_TO_CAMERA);
+    #endif
+
+    CartesianVector relativePoint = camera_worldSpaceToCameraSpace(vertices[vertex], camera.position, camera.heading);
+
+    #ifdef FLAG_PROFILING
+    profiling_stop(PROFILING_WORLD_TO_CAMERA);
+    #endif
+
+    #ifdef FLAG_PROFILING
+    profiling_start(PROFILING_ORTH_TO_PERSP);
+    #endif
+
+    DisplayCoords vertexCoords = camera_orthToPersp(relativePoint.z, relativePoint.y, relativePoint.x, camera.fov);
+
+    #ifdef FLAG_PROFILING
+    profiling_stop(PROFILING_ORTH_TO_PERSP);
+    #endif
+
+    cachedDisplayVertices[vertex] = vertexCoords;
+
+    return vertexCoords;
+}
+
+DisplayBlock camera_buildDisplayBlock(Camera camera, Block block) {
+    CartesianVector relativePosition = coords_addCartesian(block.position, coords_scaleCartesian(camera.position, -1));
+    DisplayBlock displayBlock = {.block = block, .render = true};
+    DisplayCoords nonRenderedCoords = {0, 0, false};
+    DisplayFace nonRenderedFace = {.zIndex = 0, .render = false};
+    DisplayCoords cachedDisplayVertices[8];
+
+    for (unsigned int i = 0; i < 4; i++) {
+        nonRenderedFace.vertices[i] = nonRenderedCoords;
+    }
+
+    for (unsigned int i = 0; i < 8; i++) {
+        cachedDisplayVertices[i] = nonRenderedCoords;
+    }
+
+    for (unsigned int face = 0; face < 6; face++) {
+        if (
+            (face == Face.NX && relativePosition.x > -0.5) ||
+            (face == Face.PX && relativePosition.x < 0.5) ||
+            (face == Face.NY && relativePosition.y > -0.5) ||
+            (face == Face.PY && relativePosition.y < 0.5) ||
+            (face == Face.NZ && relativePosition.z > -0.5) ||
+            (face == Face.PZ && relativePosition.z < 0.5)
+        ) {
+            displayBlock.faces[face] = nonRenderedFace;
+
+            continue; // Cull backface rendering
+        }
+
+        CartesianVector* vertices = world_getBlockVertices(block);
+
+        displayBlock.faces[face].render = true;
+
+        for (unsigned int i = 0; i < 4; i++) {
+            displayBlock.faces[face].vertices[i] = getBlockVertex(vertices, FACE_VERTICES[(face * 4) + i], camera, cachedDisplayVertices)
+        }
+        
+        // TODO: Find z-index of face
+    }
+}
+
 void camera_moveInAriz(Camera* camera, double distance, double ariz) {
     camera->position = coords_addCartesian(camera->position, coords_fromPolar((PolarVector) {
         distance,
@@ -89,6 +169,7 @@ void drawDisplayLine(DisplayCoords a, DisplayCoords b, color_t colour) {
     dline(a.x, VIEWPORT_HEIGHT - a.y, b.x, VIEWPORT_HEIGHT - b.y, colour);
 }
 
+// TODO: Replace wireframing with filled-in faces
 void camera_render(Camera camera, World world) {
     #ifdef FLAG_PROFILING
     profiling_start(PROFILING_RENDER_TIME);
