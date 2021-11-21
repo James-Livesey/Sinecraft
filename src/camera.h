@@ -17,7 +17,14 @@ typedef struct {
 } DisplayCoords;
 
 typedef struct {
-    DisplayCoords vertices[4];
+    int x;
+    int y;
+    float z;
+    bool render;
+} LayeredDisplayCoords;
+
+typedef struct {
+    LayeredDisplayCoords vertices[4];
     float zIndex;
     bool render;
 } DisplayFace;

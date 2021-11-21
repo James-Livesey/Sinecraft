@@ -82,7 +82,7 @@ CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, Cartesian
     );
 }
 
-DisplayCoords getBlockVertex(CartesianVector* vertices, unsigned int vertex, Camera camera, DisplayCoords* cachedDisplayVertices) {
+LayeredDisplayCoords getBlockVertex(CartesianVector* vertices, unsigned int vertex, Camera camera, LayeredDisplayCoords* cachedDisplayVertices) {
     if (cachedDisplayVertices[vertex].render) {
         return cachedDisplayVertices[vertex];
     }
@@ -109,15 +109,15 @@ DisplayCoords getBlockVertex(CartesianVector* vertices, unsigned int vertex, Cam
 
     cachedDisplayVertices[vertex] = vertexCoords;
 
-    return vertexCoords;
+    return {vertexCoords.x, vertexCoords.y, relativePoint.x, true};
 }
 
 DisplayBlock camera_buildDisplayBlock(Camera camera, Block block) {
     CartesianVector relativePosition = coords_addCartesian(block.position, coords_scaleCartesian(camera.position, -1));
     DisplayBlock displayBlock = {.block = block, .render = true};
-    DisplayCoords nonRenderedCoords = {0, 0, false};
+    LayeredDisplayCoords nonRenderedCoords = {0, 0, false};
     DisplayFace nonRenderedFace = {.zIndex = 0, .render = false};
-    DisplayCoords cachedDisplayVertices[8];
+    LayeredDisplayCoords cachedDisplayVertices[8];
 
     for (unsigned int i = 0; i < 4; i++) {
         nonRenderedFace.vertices[i] = nonRenderedCoords;
@@ -126,6 +126,8 @@ DisplayBlock camera_buildDisplayBlock(Camera camera, Block block) {
     for (unsigned int i = 0; i < 8; i++) {
         cachedDisplayVertices[i] = nonRenderedCoords;
     }
+
+    CartesianVector* blockVertices = world_getBlockVertices(block);
 
     for (unsigned int face = 0; face < 6; face++) {
         if (
@@ -141,16 +143,22 @@ DisplayBlock camera_buildDisplayBlock(Camera camera, Block block) {
             continue; // Cull backface rendering
         }
 
-        CartesianVector* vertices = world_getBlockVertices(block);
-
         displayBlock.faces[face].render = true;
+        displayBlock.faces[face].zIndex = 0;
 
         for (unsigned int i = 0; i < 4; i++) {
-            displayBlock.faces[face].vertices[i] = getBlockVertex(vertices, FACE_VERTICES[(face * 4) + i], camera, cachedDisplayVertices)
+            LayeredDisplayCoords vertex = getBlockVertex(blockVertices, FACE_VERTICES[(face * 4) + i], camera, cachedDisplayVertices);
+
+            displayBlock.faces[face].vertices[i] = vertex;
+            displayBlock.faces[face].zIndex += vertex.z;
         }
-        
-        // TODO: Find z-index of face
+
+        displayBlock.faces[face].zIndex /= 4;
     }
+
+    free(blockVertices);
+
+    return displayBlock;
 }
 
 void camera_moveInAriz(Camera* camera, double distance, double ariz) {
