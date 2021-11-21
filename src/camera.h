@@ -16,6 +16,18 @@ typedef struct {
     bool render;
 } DisplayCoords;
 
+typedef struct {
+    DisplayCoords vertices[4];
+    float zIndex;
+    bool render;
+} DisplayFace;
+
+typedef struct {
+    Block block;
+    DisplayFace faces[6];
+    bool render;
+} DisplayBlock;
+
 Camera camera_default();
 
 DisplayCoords camera_orthToPersp(double x, double y, double distance, double fovDeg);
