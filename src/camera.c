@@ -13,6 +13,15 @@
 const int VIEWPORT_WIDTH = 128;
 const int VIEWPORT_HEIGHT = 64;
 
+const unsigned int FACE_VERTICES[] = {
+    0, 1, 3, 2, // NX
+    5, 4, 6, 7, // PX
+    0, 1, 5, 4, // NY
+    2, 3, 7, 6, // PY
+    0, 4, 6, 2, // NZ
+    1, 5, 7, 3  // PZ
+};
+
 int lastFov = 0;
 int verticalFov = 0;
 
@@ -81,6 +90,57 @@ void camera_moveInAriz(Camera* camera, double distance, double ariz) {
     }));
 }
 
+bool shouldRenderFace(Camera camera, CartesianVector* vertices, unsigned int face) {
+    switch (face) {
+        case FACE_NX:
+            return camera.position.x <= vertices[FACE_VERTICES[face * 4]].x;
+
+        case FACE_PX:
+            return camera.position.x >= vertices[FACE_VERTICES[face * 4]].x;
+
+        case FACE_NY:
+            return camera.position.y <= vertices[FACE_VERTICES[face * 4]].y;
+
+        case FACE_PY:
+            return camera.position.y >= vertices[FACE_VERTICES[face * 4]].y;
+
+        case FACE_NZ:
+            return camera.position.z <= vertices[FACE_VERTICES[face * 4]].z;
+
+        case FACE_PZ:
+            return camera.position.z >= vertices[FACE_VERTICES[face * 4]].z;
+    }
+
+    return false;
+}
+
+void setRenderFaceStates(bool* faceStates, Camera camera, CartesianVector* vertices) {
+    for (unsigned int i = 0; i < 6; i++) {
+        faceStates[i] = shouldRenderFace(camera, vertices, i);
+    }
+}
+
+bool shouldComputeVertex(unsigned int vertex, bool* faceStates) {
+    bool shouldCompute = false;
+
+    for (unsigned int i = 0; i < 6; i++) {
+        if (!faceStates[i]) {
+            continue;
+        }
+
+        if (
+            (FACE_VERTICES[(i * 4) + 0] == vertex) ||
+            (FACE_VERTICES[(i * 4) + 1] == vertex) ||
+            (FACE_VERTICES[(i * 4) + 2] == vertex) ||
+            (FACE_VERTICES[(i * 4) + 3] == vertex)
+        ) {
+            shouldCompute = true;
+        }
+    }
+
+    return shouldCompute;
+}
+
 void drawDisplayLine(DisplayCoords a, DisplayCoords b, color_t colour) {
     if (!a.render || !b.render) {
         return;
@@ -97,15 +157,22 @@ void camera_render(Camera camera, World world) {
     for (unsigned int i = 0; i < world.changedBlockCount; i++) {
         CartesianVector* vertices = world_getBlockVertices(world.changedBlocks[i]);
         DisplayCoords pixelsToSet[8];
+        bool faceStates[6];
 
-        for (unsigned int j = 0; j < 8; j++) {
-            pixelsToSet[j] = (DisplayCoords) {0, 0, false};
+        setRenderFaceStates(faceStates, camera, vertices);
+
+        for (unsigned int vertex = 0; vertex < 8; vertex++) {
+            pixelsToSet[vertex] = (DisplayCoords) {0, 0, false};
+
+            if (!shouldComputeVertex(vertex, faceStates)) {
+                continue;
+            }
 
             #ifdef FLAG_PROFILING
             profiling_start(PROFILING_WORLD_TO_CAMERA);
             #endif
 
-            CartesianVector relativePoint = camera_worldSpaceToCameraSpace(vertices[j], camera.position, camera.heading);
+            CartesianVector relativePoint = camera_worldSpaceToCameraSpace(vertices[vertex], camera.position, camera.heading);
 
             #ifdef FLAG_PROFILING
             profiling_stop(PROFILING_WORLD_TO_CAMERA);
@@ -125,7 +192,7 @@ void camera_render(Camera camera, World world) {
             profiling_stop(PROFILING_ORTH_TO_PERSP);
             #endif
 
-            pixelsToSet[j] = pixelToSet;
+            pixelsToSet[vertex] = pixelToSet;
 
             // dpixel(pixelToSet.x, VIEWPORT_HEIGHT - pixelToSet.y, C_BLACK);
         }
@@ -134,18 +201,16 @@ void camera_render(Camera camera, World world) {
         profiling_start(PROFILING_DRAW_EDGES);
         #endif
 
-        drawDisplayLine(pixelsToSet[0], pixelsToSet[1], C_BLACK);
-        drawDisplayLine(pixelsToSet[0], pixelsToSet[2], C_BLACK);
-        drawDisplayLine(pixelsToSet[1], pixelsToSet[3], C_BLACK);
-        drawDisplayLine(pixelsToSet[1], pixelsToSet[5], C_BLACK);
-        drawDisplayLine(pixelsToSet[2], pixelsToSet[3], C_BLACK);
-        drawDisplayLine(pixelsToSet[3], pixelsToSet[7], C_BLACK);
-        drawDisplayLine(pixelsToSet[4], pixelsToSet[0], C_BLACK);
-        drawDisplayLine(pixelsToSet[4], pixelsToSet[6], C_BLACK);
-        drawDisplayLine(pixelsToSet[5], pixelsToSet[4], C_BLACK);
-        drawDisplayLine(pixelsToSet[5], pixelsToSet[7], C_BLACK);
-        drawDisplayLine(pixelsToSet[6], pixelsToSet[2], C_BLACK);
-        drawDisplayLine(pixelsToSet[7], pixelsToSet[6], C_BLACK);
+        for (unsigned int face = 0; face < sizeof(faceStates) / sizeof(faceStates[0]); face++) {
+            if (!faceStates[face]) {
+                continue;
+            }
+
+            drawDisplayLine(pixelsToSet[FACE_VERTICES[(face * 4) + 0]], pixelsToSet[FACE_VERTICES[(face * 4) + 1]], C_BLACK);
+            drawDisplayLine(pixelsToSet[FACE_VERTICES[(face * 4) + 1]], pixelsToSet[FACE_VERTICES[(face * 4) + 2]], C_BLACK);
+            drawDisplayLine(pixelsToSet[FACE_VERTICES[(face * 4) + 2]], pixelsToSet[FACE_VERTICES[(face * 4) + 3]], C_BLACK);
+            drawDisplayLine(pixelsToSet[FACE_VERTICES[(face * 4) + 3]], pixelsToSet[FACE_VERTICES[(face * 4) + 0]], C_BLACK);
+        }
 
         #ifdef FLAG_PROFILING
         profiling_stop(PROFILING_DRAW_EDGES);

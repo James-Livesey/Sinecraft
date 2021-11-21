@@ -4,6 +4,15 @@
 #include "coords.h"
 #include "world.h"
 
+enum {
+    FACE_NX = 0,
+    FACE_PX = 1,
+    FACE_NY = 2,
+    FACE_PY = 3,
+    FACE_NZ = 4,
+    FACE_PZ = 5
+};
+
 typedef struct {
     CartesianVector position;
     PolarVector heading;
