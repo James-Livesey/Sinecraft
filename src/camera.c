@@ -90,6 +90,34 @@ void camera_moveInAriz(Camera* camera, double distance, double ariz) {
     }));
 }
 
+CartesianVector getAdjacentBlockPosition(Block block, unsigned int face) {
+    switch (face) {
+        case FACE_NX:
+            return coords_addCartesian(block.position, (CartesianVector) {-1, 0, 0});
+
+        case FACE_PX:
+            return coords_addCartesian(block.position, (CartesianVector) {1, 0, 0});
+
+        case FACE_NY:
+            return coords_addCartesian(block.position, (CartesianVector) {0, -1, 0});
+
+        case FACE_PY:
+            return coords_addCartesian(block.position, (CartesianVector) {0, 1, 0});
+
+        case FACE_NZ:
+            return coords_addCartesian(block.position, (CartesianVector) {0, 0, -1});
+
+        case FACE_PZ:
+            return coords_addCartesian(block.position, (CartesianVector) {0, 0, 1});
+    }
+
+    return block.position;
+}
+
+bool adjacentBlockIsFilled(World world, Block block, unsigned int face) {
+    return world_getBlock(world, getAdjacentBlockPosition(block, face)).type != BLOCK_TYPE_AIR;
+}
+
 bool shouldRenderFace(Camera camera, CartesianVector* vertices, unsigned int face) {
     switch (face) {
         case FACE_NX:
@@ -155,11 +183,18 @@ void camera_render(Camera camera, World world) {
     #endif
 
     for (unsigned int i = 0; i < world.changedBlockCount; i++) {
-        CartesianVector* vertices = world_getBlockVertices(world.changedBlocks[i]);
+        Block block = world.changedBlocks[i];
+        CartesianVector* vertices = world_getBlockVertices(block);
         DisplayCoords pixelsToSet[8];
         bool faceStates[6];
 
         setRenderFaceStates(faceStates, camera, vertices);
+
+        for (unsigned int face = 0; face < 6; face++) {
+            if (adjacentBlockIsFilled(world, block, face)) {
+                faceStates[face] = false;
+            }
+        }
 
         for (unsigned int vertex = 0; vertex < 8; vertex++) {
             pixelsToSet[vertex] = (DisplayCoords) {0, 0, false};

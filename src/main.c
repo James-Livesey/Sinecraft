@@ -45,7 +45,8 @@ void main() {
 	for (unsigned int y = 0; y < 3; y++) {
 		for (unsigned int z = 0; z < 3; z++) {
 			world_addBlock(&world, (Block) {
-				.position = (CartesianVector) {0, y, z}
+				.position = (CartesianVector) {0, y, z},
+				.type = BLOCK_TYPE_STONE
 			});
 		}
 	}

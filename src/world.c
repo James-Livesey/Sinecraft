@@ -32,3 +32,16 @@ void world_addBlock(World* world, Block block) {
     world->changedBlocks = realloc(world->changedBlocks, ++world->changedBlockCount * sizeof(Block));
     world->changedBlocks[world->changedBlockCount - 1] = block;
 }
+
+Block world_getBlock(World world, CartesianVector position) {
+    for (unsigned int i = 0; i < world.changedBlockCount; i++) {
+        if (coords_equalCartesian(position, world.changedBlocks[i].position)) {
+            return world.changedBlocks[i];
+        }
+    }
+
+    return (Block) {
+        .position = position,
+        .type = BLOCK_TYPE_AIR
+    };
+}

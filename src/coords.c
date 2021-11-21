@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdbool.h>
 
 #include "coords.h"
 #include "common.h"
@@ -17,6 +18,10 @@ CartesianVector coords_addCartesian(CartesianVector a, CartesianVector b) {
 
 CartesianVector coords_multiplyCartesian(CartesianVector a, CartesianVector b) {
     return (CartesianVector) {a.x * b.x, a.y * b.y, a.z * b.z};
+}
+
+bool coords_equalCartesian(CartesianVector a, CartesianVector b) {
+    return a.x == b.x && a.y == b.y && a.z == b.z;
 }
 
 CartesianVector coords_fromPolar(PolarVector polar) {
@@ -47,6 +52,10 @@ PolarVector coords_scalePolar(PolarVector vector, double scaleFactor) {
 
 PolarVector coords_addPolar(PolarVector a, PolarVector b) {
     return (PolarVector) {a.r + b.r, a.incl + b.incl, a.ariz + b.ariz};
+}
+
+bool coords_equalPolar(PolarVector a, PolarVector b) {
+    return a.r == b.r && a.incl == b.incl && a.ariz == b.ariz;
 }
 
 PolarVector coords_fromCartesian(CartesianVector cartesian) {
