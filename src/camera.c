@@ -48,7 +48,7 @@ DisplayCoords camera_orthToPersp(double x, double y, double distance, double fov
     }
 
     if (distance == 0) {
-        return (DisplayCoords) {VIEWPORT_WIDTH / 2, VIEWPORT_HEIGHT / 2, true};
+        return (DisplayCoords) {VIEWPORT_WIDTH / 2, VIEWPORT_HEIGHT / 2, false};
     }
 
     return (DisplayCoords) {
@@ -61,25 +61,26 @@ DisplayCoords camera_orthToPersp(double x, double y, double distance, double fov
 CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, CartesianVector cameraPosition, PolarVector cameraHeading) {
     cameraHeading.ariz += 180;
 
-    vector = coords_addCartesian(vector, coords_scaleCartesian(cameraPosition, -1));
+    vector.x -= cameraPosition.x;
+    vector.y -= cameraPosition.y;
+    vector.z -= cameraPosition.z;
 
-    CartesianVector pointMultiply = {1, 1, 1};
-    PolarVector pointRotate = {0, 0, 0};
+    cameraHeading.r *= -1;
+    cameraHeading.incl *= -1;
+    cameraHeading.ariz *= -1;
 
     if (vector.x < 0 && vector.z < 0) {
-        pointRotate.ariz += 180;
-    } else if (vector.x < 0) {
-        pointMultiply.x = -1;
-        pointMultiply.z = -1;
+        cameraHeading.ariz += 180;
     }
 
-    return coords_multiplyCartesian(
-        coords_rotateCartesian(vector, coords_addPolar(
-            coords_scalePolar(cameraHeading, -1),
-            pointRotate
-        )),
-        pointMultiply
-    );
+    CartesianVector result = coords_rotateCartesian(vector, cameraHeading);
+
+    if (vector.x < 0 && vector.z >= 0) {
+        result.x *= -1;
+        result.z *= -1;
+    }
+
+    return result;
 }
 
 void camera_moveInAriz(Camera* camera, double distance, double ariz) {
