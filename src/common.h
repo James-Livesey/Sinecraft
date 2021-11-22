@@ -10,6 +10,7 @@
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define LERP(v0, v1, t) ((v0 * (1 - t)) + (v1 * t))
 #define INVLERP(v0, v1, v) ((v - v0) / (v1 - v0))
+#define SWAPINT(a, b) {int temp = a; a = b; b = temp;}
 
 int common_degrees(double rad);
 double common_radians(int deg);

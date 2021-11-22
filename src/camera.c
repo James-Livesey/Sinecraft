@@ -178,6 +178,73 @@ void drawDisplayLine(DisplayCoords a, DisplayCoords b, color_t colour) {
     dline(a.x, VIEWPORT_HEIGHT - a.y, b.x, VIEWPORT_HEIGHT - b.y, colour);
 }
 
+// See https://github.com/michaelerule/Uno9341TFT/blob/e4326d0e73ded32ef3aa4b3806ed5bf54886d2c9/examples/self_contained_Uno9341TFT_graphics_test_fast_commands/Arduino_TFTLCD.cpp#L837 for implementation
+// This procedure is licenced under the BSD License
+void drawDisplayTriangle(DisplayCoords a, DisplayCoords b, DisplayCoords c, color_t colour) {
+    int ia;
+    int ib;
+    int y;
+
+    if (a.y > b.y) {
+        SWAPCOORDS(a, b);
+    }
+
+    if (b.y > c.y) {
+        SWAPCOORDS(b, c);
+    }
+
+    if (a.y > b.y) {
+        SWAPCOORDS(a, b);
+    }
+
+    if (a.y == c.y) {
+        return;
+    }
+
+    int dxAB = b.x - a.x;
+    int dyAB = b.y - a.y;
+    int dxAC = c.x - a.x;
+    int dyAC = c.y - a.y;
+    int dxBC = c.x - b.x;
+    int dyBC = c.y - b.y;
+
+    int sideA = 0;
+    int sideB = 0;
+    int last = b.y == c.y ? b.y : b.y - 1;
+
+    sideA += dxAB;
+    sideB += dxAC;
+
+    for (y = a.y + 1; y <= last; y++) {
+        ia = a.x + (sideA / dyAB);
+        ib = a.x + (sideB / dyAC);
+        sideA += dxAB;
+        sideB += dxAC;
+
+        if (ia > ib) {
+            SWAPINT(ia, ib);
+        }
+
+        dline(ia, VIEWPORT_HEIGHT - y, ib, VIEWPORT_HEIGHT - y, colour);
+    }
+
+    sideA = dxBC * (y - b.y);
+    sideB = dxAC * (y - a.y);
+
+    for (; y < c.y; y++) {
+        ia = b.x + (sideA / dyBC);
+        ib = a.x + (sideB / dyAC);
+        sideA += dxBC;
+        sideB += dxAC;
+
+        if (ia > ib) {
+            SWAPINT(ia, ib);
+        }
+
+        dline(ia, VIEWPORT_HEIGHT - y, ib, VIEWPORT_HEIGHT - y, colour);
+    }
+}
+
 void addBlockFace(DisplayBlockFaces* faces, DisplayBlockFace face) {
     faces->faces = realloc(faces->faces, ++faces->count * sizeof(face));
     faces->faces[faces->count - 1] = face;
@@ -198,18 +265,8 @@ void sortBlockFaces(DisplayBlockFaces* faces) {
 }
 
 void renderBlockFace(DisplayBlockFace face, color_t colour) {
-    unsigned int renderLines = MIN(ABS(face.vertices[2].y - face.vertices[0].y) / 2, 20);
-
-    for (double i = 0; i < renderLines; i++) {
-        double t = i / renderLines;
-        int ax = LERP(face.vertices[0].x, face.vertices[3].x, t);
-        int ay = LERP(face.vertices[0].y, face.vertices[3].y, t);
-        int bx = LERP(face.vertices[1].x, face.vertices[2].x, t);
-        int by = LERP(face.vertices[1].y, face.vertices[2].y, t);
-
-        dline(ax, VIEWPORT_HEIGHT - ay, bx, VIEWPORT_HEIGHT - by, colour);
-        dline(ax, VIEWPORT_HEIGHT - ay + 1, bx, VIEWPORT_HEIGHT - by + 1, colour);
-    }
+    drawDisplayTriangle(face.vertices[0], face.vertices[1], face.vertices[2], colour);
+    drawDisplayTriangle(face.vertices[0], face.vertices[2], face.vertices[3], colour);
 
     drawDisplayLine(face.vertices[0], face.vertices[1], C_BLACK);
     drawDisplayLine(face.vertices[1], face.vertices[2], C_BLACK);
@@ -309,7 +366,7 @@ void camera_render(Camera camera, World world) {
     #endif
 
     for (unsigned int i = 0; i < faces.count; i++) {
-        renderBlockFace(faces.faces[i], C_LIGHT);
+        renderBlockFace(faces.faces[i], C_WHITE);
     }
 
     #ifdef FLAG_PROFILING

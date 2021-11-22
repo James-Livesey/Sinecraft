@@ -2,7 +2,6 @@
 #include <gint/display.h>
 #include <gint/display-fx.h>
 #include <gint/keyboard.h>
-#include <gint/gray.h>
 
 #include "flags.h"
 #include "common.h"
@@ -61,8 +60,6 @@ void main() {
 	#ifdef FLAG_PROFILING
 	profiling_init();
 	#endif
-
-	dgray(DGRAY_ON);
 
 	while (true) {
 		dclear(C_WHITE);

@@ -4,6 +4,8 @@
 #include "coords.h"
 #include "world.h"
 
+#define SWAPCOORDS(a, b) {DisplayCoords temp = a; a = b; b = temp;}
+
 enum {
     FACE_NX = 0,
     FACE_PX = 1,
