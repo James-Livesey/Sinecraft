@@ -11,7 +11,8 @@ typedef enum {
     PROFILING_RENDER_TIME = 0,
     PROFILING_WORLD_TO_CAMERA = 1,
     PROFILING_ORTH_TO_PERSP = 2,
-    PROFILING_DRAW_EDGES = 3
+    PROFILING_FIND_EDGES = 3,
+    PROFILING_DRAW_FACES = 4
 } ProfilingSlot;
 
 void profiling_init();

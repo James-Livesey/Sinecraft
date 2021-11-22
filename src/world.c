@@ -29,7 +29,7 @@ World world_default() {
 }
 
 void world_addBlock(World* world, Block block) {
-    world->changedBlocks = realloc(world->changedBlocks, ++world->changedBlockCount * sizeof(Block));
+    world->changedBlocks = realloc(world->changedBlocks, ++world->changedBlockCount * sizeof(block));
     world->changedBlocks[world->changedBlockCount - 1] = block;
 }
 

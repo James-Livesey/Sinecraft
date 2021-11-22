@@ -178,16 +178,59 @@ void drawDisplayLine(DisplayCoords a, DisplayCoords b, color_t colour) {
     dline(a.x, VIEWPORT_HEIGHT - a.y, b.x, VIEWPORT_HEIGHT - b.y, colour);
 }
 
+void addBlockFace(DisplayBlockFaces* faces, DisplayBlockFace face) {
+    faces->faces = realloc(faces->faces, ++faces->count * sizeof(face));
+    faces->faces[faces->count - 1] = face;
+}
+
+void sortBlockFaces(DisplayBlockFaces* faces) {
+    for (unsigned int i = 1; i < faces->count; i++) {
+        DisplayBlockFace element = faces->faces[i];
+        int j = i - 1;
+
+        while (j >= 0 && faces->faces[j].z < element.z) {
+            faces->faces[j + 1] = faces->faces[j];
+            j--;
+        }
+
+        faces->faces[j + 1] = element;
+    }
+}
+
+void renderBlockFace(DisplayBlockFace face, color_t colour) {
+    unsigned int renderLines = MIN(ABS(face.vertices[2].y - face.vertices[0].y) / 2, 20);
+
+    for (double i = 0; i < renderLines; i++) {
+        double t = i / renderLines;
+        int ax = LERP(face.vertices[0].x, face.vertices[3].x, t);
+        int ay = LERP(face.vertices[0].y, face.vertices[3].y, t);
+        int bx = LERP(face.vertices[1].x, face.vertices[2].x, t);
+        int by = LERP(face.vertices[1].y, face.vertices[2].y, t);
+
+        dline(ax, VIEWPORT_HEIGHT - ay, bx, VIEWPORT_HEIGHT - by, colour);
+        dline(ax, VIEWPORT_HEIGHT - ay + 1, bx, VIEWPORT_HEIGHT - by + 1, colour);
+    }
+
+    drawDisplayLine(face.vertices[0], face.vertices[1], C_BLACK);
+    drawDisplayLine(face.vertices[1], face.vertices[2], C_BLACK);
+    drawDisplayLine(face.vertices[2], face.vertices[3], C_BLACK);
+    drawDisplayLine(face.vertices[3], face.vertices[0], C_BLACK);
+}
+
 void camera_render(Camera camera, World world) {
     #ifdef FLAG_PROFILING
     profiling_start(PROFILING_RENDER_TIME);
     #endif
+
+    DisplayBlockFaces faces = {.count = 0, .faces = malloc(0)};
 
     for (unsigned int i = 0; i < world.changedBlockCount; i++) {
         Block block = world.changedBlocks[i];
         CartesianVector* vertices = world_getBlockVertices(block);
         DisplayCoords pixelsToSet[8];
         bool faceStates[6];
+        unsigned int zSum = 0;
+        unsigned int zTotal = 0;
 
         setRenderFaceStates(faceStates, camera, vertices);
 
@@ -218,6 +261,9 @@ void camera_render(Camera camera, World world) {
                 continue; // Don't render when behind camera
             }
 
+            zSum += relativePoint.x;
+            zTotal++;
+
             #ifdef FLAG_PROFILING
             profiling_start(PROFILING_ORTH_TO_PERSP);
             #endif
@@ -229,12 +275,10 @@ void camera_render(Camera camera, World world) {
             #endif
 
             pixelsToSet[vertex] = pixelToSet;
-
-            // dpixel(pixelToSet.x, VIEWPORT_HEIGHT - pixelToSet.y, C_BLACK);
         }
 
         #ifdef FLAG_PROFILING
-        profiling_start(PROFILING_DRAW_EDGES);
+        profiling_start(PROFILING_FIND_EDGES);
         #endif
 
         for (unsigned int face = 0; face < sizeof(faceStates) / sizeof(faceStates[0]); face++) {
@@ -242,18 +286,37 @@ void camera_render(Camera camera, World world) {
                 continue;
             }
 
-            drawDisplayLine(pixelsToSet[FACE_VERTICES[(face * 4) + 0]], pixelsToSet[FACE_VERTICES[(face * 4) + 1]], C_BLACK);
-            drawDisplayLine(pixelsToSet[FACE_VERTICES[(face * 4) + 1]], pixelsToSet[FACE_VERTICES[(face * 4) + 2]], C_BLACK);
-            drawDisplayLine(pixelsToSet[FACE_VERTICES[(face * 4) + 2]], pixelsToSet[FACE_VERTICES[(face * 4) + 3]], C_BLACK);
-            drawDisplayLine(pixelsToSet[FACE_VERTICES[(face * 4) + 3]], pixelsToSet[FACE_VERTICES[(face * 4) + 0]], C_BLACK);
+            DisplayBlockFace faceToAdd = {.z = zSum / zTotal};
+
+            for (unsigned int i = 0; i < 4; i++) {
+                faceToAdd.vertices[i] = pixelsToSet[FACE_VERTICES[(face * 4) + i]];
+            }
+
+            addBlockFace(&faces, faceToAdd);
         }
 
         #ifdef FLAG_PROFILING
-        profiling_stop(PROFILING_DRAW_EDGES);
+        profiling_stop(PROFILING_FIND_EDGES);
         #endif
 
         free(vertices);
     }
+
+    sortBlockFaces(&faces);
+
+    #ifdef FLAG_PROFILING
+    profiling_start(PROFILING_DRAW_FACES);
+    #endif
+
+    for (unsigned int i = 0; i < faces.count; i++) {
+        renderBlockFace(faces.faces[i], C_LIGHT);
+    }
+
+    #ifdef FLAG_PROFILING
+    profiling_stop(PROFILING_DRAW_FACES);
+    #endif
+
+    free(faces.faces);
 
     #ifdef FLAG_PROFILING
     profiling_stop(PROFILING_RENDER_TIME);
