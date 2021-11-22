@@ -5,6 +5,7 @@
 
 #include "flags.h"
 #include "common.h"
+#include "textures.h"
 #include "world.h"
 #include "camera.h"
 #include "profiling.h"
@@ -35,6 +36,8 @@ void showProfile() {
 
 void main() {
 	bool showLogo = true;
+
+	textures_init();
 
 	World world = world_default();
 	Camera camera = camera_default();

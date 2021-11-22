@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "common.h"
 #include "coords.h"
+#include "textures.h"
 #include "world.h"
 #include "profiling.h"
 
@@ -264,6 +265,15 @@ void sortBlockFaces(DisplayBlockFaces* faces) {
     }
 }
 
+DisplayCoords findPointInFace(DisplayBlockFace face, double xt, double yt) {
+    int minX = LERP((double)face.vertices[0].x, (double)face.vertices[3].x, yt);
+    int maxX = LERP((double)face.vertices[1].x, (double)face.vertices[2].x, yt);
+    int minY = LERP((double)face.vertices[0].y, (double)face.vertices[1].y, xt);
+    int maxY = LERP((double)face.vertices[3].y, (double)face.vertices[2].y, xt);
+
+    return (DisplayCoords) {LERP(minX, maxX, xt), LERP(minY, maxY, yt), true};
+}
+
 void renderBlockFace(DisplayBlockFace face, color_t colour) {
     drawDisplayTriangle(face.vertices[0], face.vertices[1], face.vertices[2], colour);
     drawDisplayTriangle(face.vertices[0], face.vertices[2], face.vertices[3], colour);
@@ -272,6 +282,12 @@ void renderBlockFace(DisplayBlockFace face, color_t colour) {
     drawDisplayLine(face.vertices[1], face.vertices[2], C_BLACK);
     drawDisplayLine(face.vertices[2], face.vertices[3], C_BLACK);
     drawDisplayLine(face.vertices[3], face.vertices[0], C_BLACK);
+
+    for (unsigned int i = 0; i < textures[face.texture].linesToRender; i++) {
+        TextureLine line = textures[face.texture].lines[i];
+
+        drawDisplayLine(findPointInFace(face, line.x1, line.y1), findPointInFace(face, line.x2, line.y2), C_BLACK);
+    }
 }
 
 void camera_render(Camera camera, World world) {
@@ -343,7 +359,7 @@ void camera_render(Camera camera, World world) {
                 continue;
             }
 
-            DisplayBlockFace faceToAdd = {.z = zSum / zTotal};
+            DisplayBlockFace faceToAdd = {.z = zSum / zTotal, .texture = TEXTURE_TEST};
 
             for (unsigned int i = 0; i < 4; i++) {
                 faceToAdd.vertices[i] = pixelsToSet[FACE_VERTICES[(face * 4) + i]];
