@@ -31,10 +31,10 @@ void textures_init() {
     textures[TEXTURE_WOOD].lines[6] = (TextureLine) {14, 0, 14, 16};
     textures[TEXTURE_WOOD].linesToRender = 7;
 
-    textures[TEXTURE_WOOD].lines[0] = (TextureLine) {0, 0, 6, 12};
-    textures[TEXTURE_WOOD].lines[1] = (TextureLine) {3, 5, 16, 2};
-    textures[TEXTURE_WOOD].lines[2] = (TextureLine) {10, 3, 13, 13};
-    textures[TEXTURE_WOOD].lines[3] = (TextureLine) {0, 11, 16, 14};
-    textures[TEXTURE_WOOD].lines[4] = (TextureLine) {8, 13, 5, 16};
-    textures[TEXTURE_WOOD].linesToRender = 7;
+    textures[TEXTURE_LEAVES] = textures[TEXTURE_LEAVES];
+
+    textures[TEXTURE_LEAVES].lines[0] = (TextureLine) {0, 0, 16, 16};
+    textures[TEXTURE_LEAVES].lines[1] = (TextureLine) {0, 10, 10, 0};
+    textures[TEXTURE_LEAVES].lines[2] = (TextureLine) {10, 16, 16, 10};
+    textures[TEXTURE_LEAVES].linesToRender = 3;
 }

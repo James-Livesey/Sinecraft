@@ -56,7 +56,7 @@ Block world_getBlock(World world, CartesianVector position) {
 int world_getBlockTexture(int blockType, int face) {
     for (unsigned int i = 0; i < sizeof(BLOCK_INFO) / sizeof(BLOCK_INFO[0]); i += 7) {
         if (BLOCK_INFO[i] == blockType) {
-            return BLOCK_INFO[i + face];
+            return BLOCK_INFO[i + face + 1];
         }
     }
 
