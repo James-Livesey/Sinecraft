@@ -5,6 +5,7 @@
 
 #include "flags.h"
 #include "common.h"
+#include "textures.h"
 #include "world.h"
 #include "camera.h"
 #include "profiling.h"
@@ -36,6 +37,8 @@ void showProfile() {
 void main() {
 	bool showLogo = true;
 
+	textures_init();
+
 	World world = world_default();
 	Camera camera = camera_default();
 
@@ -43,18 +46,28 @@ void main() {
 	camera.position.y = 1;
 	camera.position.z = 1;
 
+	world_addBlock(&world, (Block) {
+		.position = (CartesianVector) {1, 0, 1},
+		.type = BLOCK_TYPE_WOOD
+	});
+
+	world_addBlock(&world, (Block) {
+		.position = (CartesianVector) {1, 1, 1},
+		.type = BLOCK_TYPE_WOOD
+	});
+
 	for (unsigned int x = 0; x < 3; x++) {
 		for (unsigned int z = 0; z < 3; z++) {
 			world_addBlock(&world, (Block) {
-				.position = (CartesianVector) {x, 0, z},
-				.type = BLOCK_TYPE_STONE
+				.position = (CartesianVector) {x, 2, z},
+				.type = BLOCK_TYPE_LEAVES
 			});
 		}
 	}
 
 	world_addBlock(&world, (Block) {
-		.position = (CartesianVector) {1, 1, 1},
-		.type = BLOCK_TYPE_STONE
+		.position = (CartesianVector) {1, 3, 1},
+		.type = BLOCK_TYPE_LEAVES
 	});
 
 	#ifdef FLAG_PROFILING

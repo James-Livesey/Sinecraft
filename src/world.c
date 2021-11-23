@@ -2,6 +2,13 @@
 
 #include "world.h"
 #include "coords.h"
+#include "textures.h"
+
+const int BLOCK_INFO[] = {
+    // Block type, texture 0-5
+    BLOCK_TYPE_WOOD, TEXTURE_WOOD, TEXTURE_WOOD, TEXTURE_DEFAULT, TEXTURE_DEFAULT, TEXTURE_WOOD, TEXTURE_WOOD,
+    BLOCK_TYPE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES, TEXTURE_LEAVES
+};
 
 CartesianVector* world_getBlockVertices(Block block) {
     CartesianVector* vertices = malloc(8 * sizeof(CartesianVector));
@@ -44,4 +51,14 @@ Block world_getBlock(World world, CartesianVector position) {
         .position = position,
         .type = BLOCK_TYPE_AIR
     };
+}
+
+int world_getBlockTexture(int blockType, int face) {
+    for (unsigned int i = 0; i < sizeof(BLOCK_INFO) / sizeof(BLOCK_INFO[0]); i += 7) {
+        if (BLOCK_INFO[i] == blockType) {
+            return BLOCK_INFO[i + face + 1];
+        }
+    }
+
+    return TEXTURE_DEFAULT;
 }

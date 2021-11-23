@@ -2,6 +2,7 @@
 #define CAMERA_H
 
 #include "coords.h"
+#include "textures.h"
 #include "world.h"
 
 #define SWAPCOORDS(a, b) {DisplayCoords temp = a; a = b; b = temp;}
@@ -30,6 +31,7 @@ typedef struct {
 typedef struct {
     DisplayCoords vertices[4];
     double z;
+    int texture;
 } DisplayBlockFace;
 
 typedef struct {

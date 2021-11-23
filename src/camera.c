@@ -7,6 +7,7 @@
 #include "camera.h"
 #include "common.h"
 #include "coords.h"
+#include "textures.h"
 #include "world.h"
 #include "profiling.h"
 
@@ -264,7 +265,22 @@ void sortBlockFaces(DisplayBlockFaces* faces) {
     }
 }
 
+DisplayCoords findPointInFace(DisplayBlockFace face, double xt, double yt) {
+    int minX = LERP((double)face.vertices[0].x, (double)face.vertices[3].x, yt / 16);
+    int maxX = LERP((double)face.vertices[1].x, (double)face.vertices[2].x, yt / 16);
+    int minY = LERP((double)face.vertices[0].y, (double)face.vertices[1].y, xt / 16);
+    int maxY = LERP((double)face.vertices[3].y, (double)face.vertices[2].y, xt / 16);
+
+    return (DisplayCoords) {LERP(minX, maxX, xt / 16), LERP(minY, maxY, yt / 16), true};
+}
+
 void renderBlockFace(DisplayBlockFace face, color_t colour) {
+    for (unsigned int i = 0; i < 4; i++) {
+        if (!face.vertices[i].render) {
+            return;
+        }
+    }
+
     drawDisplayTriangle(face.vertices[0], face.vertices[1], face.vertices[2], colour);
     drawDisplayTriangle(face.vertices[0], face.vertices[2], face.vertices[3], colour);
 
@@ -272,6 +288,20 @@ void renderBlockFace(DisplayBlockFace face, color_t colour) {
     drawDisplayLine(face.vertices[1], face.vertices[2], C_BLACK);
     drawDisplayLine(face.vertices[2], face.vertices[3], C_BLACK);
     drawDisplayLine(face.vertices[3], face.vertices[0], C_BLACK);
+
+    if (face.z > 6) { // TODO: Allow rendering distance options via some graphics settings menu
+        return;
+    }
+
+    if (ABS(face.vertices[1].x - face.vertices[0].x) < 8 || ABS(face.vertices[3].y - face.vertices[0].y) < 8) {
+        return;
+    }
+
+    for (unsigned int i = 0; i < textures[face.texture].linesToRender; i++) {
+        TextureLine line = textures[face.texture].lines[i];
+
+        drawDisplayLine(findPointInFace(face, line.x1, line.y1), findPointInFace(face, line.x2, line.y2), C_BLACK);
+    }
 }
 
 void camera_render(Camera camera, World world) {
@@ -338,12 +368,19 @@ void camera_render(Camera camera, World world) {
         profiling_start(PROFILING_FIND_EDGES);
         #endif
 
+        int faceSide = -1;
+
         for (unsigned int face = 0; face < sizeof(faceStates) / sizeof(faceStates[0]); face++) {
+            faceSide++;
+
             if (!faceStates[face]) {
                 continue;
             }
 
-            DisplayBlockFace faceToAdd = {.z = zSum / zTotal};
+            DisplayBlockFace faceToAdd = {
+                .z = zSum / zTotal,
+                .texture = world_getBlockTexture(block.type, faceSide)
+            };
 
             for (unsigned int i = 0; i < 4; i++) {
                 faceToAdd.vertices[i] = pixelsToSet[FACE_VERTICES[(face * 4) + i]];
