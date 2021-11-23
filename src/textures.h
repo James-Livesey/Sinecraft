@@ -2,10 +2,13 @@
 #define TEXTURES_H_
 
 #define LINES_PER_TEXTURE 8
-#define TEXTURE_COUNT 1
+#define TEXTURE_COUNT 5
 
 enum {
-    TEXTURE_TEST
+    TEXTURE_DEFAULT,
+    TEXTURE_GRASS,
+    TEXTURE_WOOD,
+    TEXTURE_LEAVES
 };
 
 typedef struct {

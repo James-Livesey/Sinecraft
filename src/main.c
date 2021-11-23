@@ -57,7 +57,7 @@ void main() {
 
 	world_addBlock(&world, (Block) {
 		.position = (CartesianVector) {1, 1, 1},
-		.type = BLOCK_TYPE_STONE
+		.type = BLOCK_TYPE_WOOD
 	});
 
 	#ifdef FLAG_PROFILING
