@@ -13,6 +13,8 @@
 
 const int VIEWPORT_WIDTH = 128;
 const int VIEWPORT_HEIGHT = 64;
+const int VIEWPORT_CENTRE_X = VIEWPORT_WIDTH / 2;
+const int VIEWPORT_CENTRE_Y = VIEWPORT_HEIGHT / 2;
 
 const unsigned int FACE_VERTICES[] = {
     0, 1, 3, 2, // NX
@@ -25,6 +27,9 @@ const unsigned int FACE_VERTICES[] = {
 
 int lastFov = 0;
 int verticalFov = 0;
+
+DisplayBlockFace lastSelectedFace;
+bool blockCurrentlySelected = false;
 
 Camera camera_default() {
     return (Camera) {
@@ -45,11 +50,11 @@ double orthToPersp2d(double value, double distance, double fov) {
 DisplayCoords camera_orthToPersp(double x, double y, double distance, double fov) {
     if (fov != lastFov) {
         lastFov = fov;
-        verticalFov = 2 * common_atan((VIEWPORT_HEIGHT / 2) / ((VIEWPORT_WIDTH / 2) / common_tan(fov / 2)));
+        verticalFov = 2 * common_atan(VIEWPORT_CENTRE_Y / (VIEWPORT_CENTRE_X / common_tan(fov / 2)));
     }
 
     if (distance == 0) {
-        return (DisplayCoords) {VIEWPORT_WIDTH / 2, VIEWPORT_HEIGHT / 2, false};
+        return (DisplayCoords) {VIEWPORT_CENTRE_X, VIEWPORT_CENTRE_Y, false};
     }
 
     return (DisplayCoords) {
@@ -274,22 +279,41 @@ DisplayCoords findPointInFace(DisplayBlockFace face, double xt, double yt) {
     return (DisplayCoords) {LERP(minX, maxX, xt / 16), LERP(minY, maxY, yt / 16), true};
 }
 
-void renderBlockFace(DisplayBlockFace face, color_t colour) {
+bool inBounds(int a, int b, int value) {
+    if (a < b) {
+        return a <= value && value <= b;
+    }
+
+    return b <= value && value <= a;
+}
+
+void renderBlockFace(DisplayBlockFace face) {
     for (unsigned int i = 0; i < 4; i++) {
         if (!face.vertices[i].render) {
             return;
         }
     }
 
-    drawDisplayTriangle(face.vertices[0], face.vertices[1], face.vertices[2], colour);
-    drawDisplayTriangle(face.vertices[0], face.vertices[2], face.vertices[3], colour);
+    if (
+        face.z <= MAX_FACE_SELECT_DISTANCE &&
+        inBounds(face.vertices[0].x, face.vertices[1].x, VIEWPORT_CENTRE_X) &&
+        inBounds(face.vertices[3].x, face.vertices[2].x, VIEWPORT_CENTRE_X) &&
+        inBounds(face.vertices[0].y, face.vertices[3].y, VIEWPORT_CENTRE_Y) &&
+        inBounds(face.vertices[1].y, face.vertices[2].y, VIEWPORT_CENTRE_Y)
+    ) {
+        lastSelectedFace = face;
+        blockCurrentlySelected = true;
+    }
+
+    drawDisplayTriangle(face.vertices[0], face.vertices[1], face.vertices[2], C_WHITE);
+    drawDisplayTriangle(face.vertices[0], face.vertices[2], face.vertices[3], C_WHITE);
 
     drawDisplayLine(face.vertices[0], face.vertices[1], C_BLACK);
     drawDisplayLine(face.vertices[1], face.vertices[2], C_BLACK);
     drawDisplayLine(face.vertices[2], face.vertices[3], C_BLACK);
     drawDisplayLine(face.vertices[3], face.vertices[0], C_BLACK);
 
-    if (face.z > 6) { // TODO: Allow rendering distance options via some graphics settings menu
+    if (face.z > MAX_TEXTURE_RENDER_DISTANCE) {
         return;
     }
 
@@ -304,12 +328,25 @@ void renderBlockFace(DisplayBlockFace face, color_t colour) {
     }
 }
 
+void renderBlockFaceSelected(DisplayBlockFace face) {
+    for (unsigned int i = 0; i < 4; i++) {
+        if (!face.vertices[i].render) {
+            return;
+        }
+    }
+
+    drawDisplayTriangle(face.vertices[0], face.vertices[1], face.vertices[2], C_INVERT);
+    drawDisplayTriangle(face.vertices[0], face.vertices[2], face.vertices[3], C_INVERT);
+}
+
 void camera_render(Camera camera, World world) {
     #ifdef FLAG_PROFILING
     profiling_start(PROFILING_RENDER_TIME);
     #endif
 
     DisplayBlockFaces faces = {.count = 0, .faces = malloc(0)};
+
+    blockCurrentlySelected = false;
 
     for (unsigned int i = 0; i < world.changedBlockCount; i++) {
         Block block = world.changedBlocks[i];
@@ -378,6 +415,8 @@ void camera_render(Camera camera, World world) {
             }
 
             DisplayBlockFace faceToAdd = {
+                .block = &block,
+                .face = face,
                 .z = zSum / 4,
                 .texture = world_getBlockTexture(block.type, face)
             };
@@ -403,7 +442,13 @@ void camera_render(Camera camera, World world) {
     #endif
 
     for (unsigned int i = 0; i < faces.count; i++) {
-        renderBlockFace(faces.faces[i], C_WHITE);
+        DisplayBlockFace face = faces.faces[i];
+
+        renderBlockFace(face);
+    }
+
+    if (blockCurrentlySelected) {
+        renderBlockFaceSelected(lastSelectedFace);
     }
 
     #ifdef FLAG_PROFILING

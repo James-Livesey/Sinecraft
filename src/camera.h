@@ -5,6 +5,9 @@
 #include "textures.h"
 #include "world.h"
 
+#define MAX_FACE_SELECT_DISTANCE 4
+#define MAX_TEXTURE_RENDER_DISTANCE 6
+
 #define SWAPCOORDS(a, b) {DisplayCoords temp = a; a = b; b = temp;}
 
 enum {
@@ -29,6 +32,8 @@ typedef struct {
 } DisplayCoords;
 
 typedef struct {
+    Block* block;
+    int face;
     DisplayCoords vertices[4];
     double z;
     int texture;
