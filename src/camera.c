@@ -316,8 +316,8 @@ void camera_render(Camera camera, World world) {
         CartesianVector* vertices = world_getBlockVertices(block);
         DisplayCoords pixelsToSet[8];
         bool faceStates[6];
-        unsigned int zSum = 0;
-        unsigned int zTotal = 0;
+        unsigned int maxZ = 0;
+        bool zSet = false;
 
         setRenderFaceStates(faceStates, camera, vertices);
 
@@ -348,8 +348,10 @@ void camera_render(Camera camera, World world) {
                 continue; // Don't render when behind camera
             }
 
-            zSum += relativePoint.x;
-            zTotal++;
+            if (!zSet || relativePoint.x > maxZ) {
+                maxZ = relativePoint.x;
+                zSet = true;
+            }
 
             #ifdef FLAG_PROFILING
             profiling_start(PROFILING_ORTH_TO_PERSP);
@@ -378,7 +380,7 @@ void camera_render(Camera camera, World world) {
             }
 
             DisplayBlockFace faceToAdd = {
-                .z = zSum / zTotal,
+                .z = maxZ,
                 .texture = world_getBlockTexture(block.type, faceSide)
             };
 
