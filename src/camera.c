@@ -315,9 +315,8 @@ void camera_render(Camera camera, World world) {
         Block block = world.changedBlocks[i];
         CartesianVector* vertices = world_getBlockVertices(block);
         DisplayCoords pixelsToSet[8];
+        int vertexZValues[8];
         bool faceStates[6];
-        unsigned int maxZ = 0;
-        bool zSet = false;
 
         setRenderFaceStates(faceStates, camera, vertices);
 
@@ -340,17 +339,14 @@ void camera_render(Camera camera, World world) {
 
             CartesianVector relativePoint = camera_worldSpaceToCameraSpace(vertices[vertex], camera.position, camera.heading);
 
+            vertexZValues[vertex] = relativePoint.x;
+
             #ifdef FLAG_PROFILING
             profiling_stop(PROFILING_WORLD_TO_CAMERA);
             #endif
 
             if (relativePoint.x < 0) {
                 continue; // Don't render when behind camera
-            }
-
-            if (!zSet || relativePoint.x > maxZ) {
-                maxZ = relativePoint.x;
-                zSet = true;
             }
 
             #ifdef FLAG_PROFILING
@@ -370,18 +366,20 @@ void camera_render(Camera camera, World world) {
         profiling_start(PROFILING_FIND_EDGES);
         #endif
 
-        int faceSide = -1;
-
-        for (unsigned int face = 0; face < sizeof(faceStates) / sizeof(faceStates[0]); face++) {
-            faceSide++;
-
+        for (unsigned int face = 0; face < 6; face++) {
             if (!faceStates[face]) {
                 continue;
             }
 
+            double zSum = 0;
+
+            for (unsigned int i = 0; i < 4; i++) {
+                zSum += vertexZValues[FACE_VERTICES[(face * 4) + i]];
+            }
+
             DisplayBlockFace faceToAdd = {
-                .z = maxZ,
-                .texture = world_getBlockTexture(block.type, faceSide)
+                .z = zSum / 4,
+                .texture = world_getBlockTexture(block.type, face)
             };
 
             for (unsigned int i = 0; i < 4; i++) {
