@@ -31,6 +31,18 @@ void textures_init() {
     textures[TEXTURE_WOOD].lines[6] = (TextureLine) {14, 0, 14, 16};
     textures[TEXTURE_WOOD].linesToRender = 7;
 
+    textures[TEXTURE_WOOD_Y] = textures[TEXTURE_DEFAULT];
+
+    textures[TEXTURE_WOOD_Y].lines[0] = (TextureLine) {2, 2, 14, 2};
+    textures[TEXTURE_WOOD_Y].lines[1] = (TextureLine) {14, 2, 14, 14};
+    textures[TEXTURE_WOOD_Y].lines[2] = (TextureLine) {14, 14, 2, 14};
+    textures[TEXTURE_WOOD_Y].lines[3] = (TextureLine) {2, 14, 2, 2};
+    textures[TEXTURE_WOOD_Y].lines[4] = (TextureLine) {5, 5, 11, 5};
+    textures[TEXTURE_WOOD_Y].lines[5] = (TextureLine) {11, 5, 11, 11};
+    textures[TEXTURE_WOOD_Y].lines[6] = (TextureLine) {11, 11, 5, 11};
+    textures[TEXTURE_WOOD_Y].lines[7] = (TextureLine) {5, 11, 5, 5};
+    textures[TEXTURE_WOOD_Y].linesToRender = 8;
+
     textures[TEXTURE_LEAVES] = textures[TEXTURE_LEAVES];
 
     textures[TEXTURE_LEAVES].lines[0] = (TextureLine) {0, 0, 16, 16};
