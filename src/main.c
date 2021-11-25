@@ -2,6 +2,7 @@
 #include <gint/display.h>
 #include <gint/display-fx.h>
 #include <gint/keyboard.h>
+#include <gint/timer.h>
 
 #include "flags.h"
 #include "common.h"
@@ -11,6 +12,9 @@
 #include "profiling.h"
 
 extern bopti_image_t img_logo;
+
+Camera candidateCamera;
+bool shouldDestroyNextBlock = false;
 
 #ifdef FLAG_PROFILING
 
@@ -34,17 +38,59 @@ void showProfile() {
 
 #endif
 
+int getKeypresses() {
+	if (keydown(KEY_8)) {
+		camera_moveInAriz(&candidateCamera, 0.2, candidateCamera.heading.ariz);
+	}
+
+	if (keydown(KEY_5)) {
+		camera_moveInAriz(&candidateCamera, -0.2, candidateCamera.heading.ariz);
+	}
+
+	if (keydown(KEY_4)) {
+		camera_moveInAriz(&candidateCamera, 0.2, candidateCamera.heading.ariz - 90);
+	}
+
+	if (keydown(KEY_6)) {
+		camera_moveInAriz(&candidateCamera, 0.2, candidateCamera.heading.ariz + 90);
+	}
+
+	if (keydown(KEY_UP)) {
+		candidateCamera.heading.incl -= 5;
+	}
+
+	if (keydown(KEY_DOWN)) {
+		candidateCamera.heading.incl += 5;
+	}
+
+	if (keydown(KEY_LEFT)) {
+		candidateCamera.heading.ariz -= 5;
+	}
+
+	if (keydown(KEY_RIGHT)) {
+		candidateCamera.heading.ariz += 5;
+	}
+
+	if (keydown(KEY_DEL)) {
+		shouldDestroyNextBlock = true;
+	}
+
+	return TIMER_CONTINUE;
+}
+
 void main() {
 	bool showLogo = true;
 
 	textures_init();
 
 	World world = world_default();
-	Camera camera = camera_default();
+	Camera camera;
 
-	camera.position.x = -4;
-	camera.position.y = 1;
-	camera.position.z = 1;
+	candidateCamera = camera_default();
+
+	candidateCamera.position.x = -4;
+	candidateCamera.position.y = 1;
+	candidateCamera.position.z = 1;
 
 	world_addBlock(&world, (Block) {
 		.position = (CartesianVector) {1, 0, 1},
@@ -74,7 +120,19 @@ void main() {
 	profiling_init();
 	#endif
 
+	int timer = timer_configure(TIMER_ETMU, 1e5, GINT_CALL(getKeypresses));
+
+	timer_start(timer);
+
 	while (true) {
+		camera = candidateCamera;
+
+		if (shouldDestroyNextBlock) {
+			camera_destroySelectedBlock(&world);
+
+			shouldDestroyNextBlock = false;
+		}
+
 		dclear(C_WHITE);
 
 		#ifdef FLAG_PROFILING
@@ -108,41 +166,5 @@ void main() {
 			showProfile();
 		}
 		#endif
-
-		if (keydown(KEY_8)) {
-			camera_moveInAriz(&camera, 0.5, camera.heading.ariz);
-		}
-
-		if (keydown(KEY_5)) {
-			camera_moveInAriz(&camera, -0.5, camera.heading.ariz);
-		}
-
-		if (keydown(KEY_4)) {
-			camera_moveInAriz(&camera, 0.5, camera.heading.ariz - 90);
-		}
-
-		if (keydown(KEY_6)) {
-			camera_moveInAriz(&camera, 0.5, camera.heading.ariz + 90);
-		}
-
-		if (keydown(KEY_UP)) {
-			camera.heading.incl -= 12;
-		}
-
-		if (keydown(KEY_DOWN)) {
-			camera.heading.incl += 12;
-		}
-
-		if (keydown(KEY_LEFT)) {
-			camera.heading.ariz -= 12;
-		}
-
-		if (keydown(KEY_RIGHT)) {
-			camera.heading.ariz += 12;
-		}
-
-		if (keydown(KEY_DEL)) {
-			camera_destroySelectedBlock(&world);
-		}
 	}
 }

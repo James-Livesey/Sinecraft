@@ -354,14 +354,15 @@ void camera_render(Camera camera, World world) {
 
     for (unsigned int i = 0; i < world.changedBlockCount; i++) {
         Block* block = &world.changedBlocks[i];
-        CartesianVector* vertices = world_getBlockVertices(*block);
-        DisplayCoords pixelsToSet[8];
-        int vertexZValues[8];
-        bool faceStates[6];
 
         if (block->type == BLOCK_TYPE_AIR) {
             continue; // Don't render air
         }
+
+        CartesianVector* vertices = world_getBlockVertices(*block);
+        DisplayCoords pixelsToSet[8];
+        int vertexZValues[8];
+        bool faceStates[6];
 
         setRenderFaceStates(faceStates, camera, vertices);
 
@@ -465,7 +466,9 @@ void camera_render(Camera camera, World world) {
     profiling_stop(PROFILING_DRAW_FACES);
     #endif
 
-    free(faces.faces);
+    if (faces.count > 0) {
+        free(faces.faces);
+    }
 
     #ifdef FLAG_PROFILING
     profiling_stop(PROFILING_RENDER_TIME);
@@ -476,6 +479,8 @@ void camera_destroySelectedBlock(World* world) {
     if (!blockCurrentlySelected) {
         return;
     }
+
+    blockCurrentlySelected = false;
 
     Block blockToDestroy = *lastSelectedFace.block;
 
