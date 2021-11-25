@@ -32,6 +32,7 @@ int verticalFov = 0;
 
 DisplayBlockFace lastSelectedFace;
 bool blockCurrentlySelected = false;
+bool blockIsGround = false;
 
 Camera camera_default() {
     return (Camera) {
@@ -305,6 +306,7 @@ void renderBlockFace(DisplayBlockFace face) {
     ) {
         lastSelectedFace = face;
         blockCurrentlySelected = true;
+        blockIsGround = false;
     }
 
     drawDisplayTriangle(face.vertices[0], face.vertices[1], face.vertices[2], C_WHITE);
@@ -341,6 +343,59 @@ void renderBlockFaceSelected(DisplayBlockFace face) {
     drawDisplayTriangle(face.vertices[0], face.vertices[2], face.vertices[3], C_INVERT);
 
     drawDisplayLine(face.vertices[0], face.vertices[2], C_INVERT);
+}
+
+void selectFaceTowardsGround(Camera camera) {
+    PolarVector heading = camera.heading;
+
+    heading.ariz += 180;
+
+    CartesianVector direction = coords_rotateCartesian((CartesianVector) {1, 0, 0}, heading);
+    Block block;
+    bool foundBlock = false;
+
+    for (double magnitude = 0.5; magnitude <= MAX_FACE_SELECT_DISTANCE; magnitude++) {
+        CartesianVector vector = coords_addCartesian(camera.position, coords_scaleCartesian(direction, magnitude));
+
+        if (vector.y <= 0) {
+            block = (Block) {
+                .position = (CartesianVector) {round(vector.x) + 1, -1, round(vector.z) + 1},
+                .type = BLOCK_TYPE_GRASS
+            };
+
+            foundBlock = true;
+
+            break;
+        }
+    }
+
+    if (!foundBlock) {
+        return;
+    }
+
+    dprint(0, 56, C_BLACK, "%d %d %d", (int)block.position.x, (int)block.position.y, (int)block.position.z);
+
+    CartesianVector* vertices = world_getBlockVertices(block);
+    DisplayBlockFace faceToSelect = {
+        .block = &block,
+        .face = FACE_PY,
+        .z = 0,
+        .texture = BLOCK_TYPE_GRASS
+    };
+
+    for (unsigned int i = 0; i < 4; i++) {
+        CartesianVector relativePoint = camera_worldSpaceToCameraSpace(vertices[FACE_VERTICES[(FACE_PY * 4) + i]], camera.position, camera.heading);
+
+        faceToSelect.vertices[i] = camera_orthToPersp(relativePoint.z, relativePoint.y, relativePoint.x, camera.fov);
+    }
+
+    lastSelectedFace = faceToSelect;
+    blockCurrentlySelected = true;
+    blockIsGround = true;
+
+    renderBlockFaceSelected(faceToSelect);
+
+    free(vertices);
 }
 
 void camera_render(Camera camera, World world) {
@@ -458,6 +513,8 @@ void camera_render(Camera camera, World world) {
 
     if (blockCurrentlySelected) {
         renderBlockFaceSelected(lastSelectedFace);
+    } else {
+        selectFaceTowardsGround(camera);
     }
 
     dimage((VIEWPORT_WIDTH - img_crosshair.width) / 2, (VIEWPORT_HEIGHT - img_crosshair.height) / 2, &img_crosshair);
@@ -476,7 +533,7 @@ void camera_render(Camera camera, World world) {
 }
 
 void camera_destroySelectedBlock(World* world) {
-    if (!blockCurrentlySelected) {
+    if (!blockCurrentlySelected || blockIsGround) {
         return;
     }
 
