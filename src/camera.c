@@ -349,17 +349,25 @@ void selectFaceTowardsGround(Camera camera) {
     PolarVector heading = camera.heading;
 
     heading.ariz += 180;
+    heading.incl += 90;
+    heading.incl *= -1;
 
-    CartesianVector direction = coords_rotateCartesian((CartesianVector) {1, 0, 0}, heading);
     Block block;
     bool foundBlock = false;
 
-    for (double magnitude = 0.5; magnitude <= MAX_FACE_SELECT_DISTANCE; magnitude++) {
-        CartesianVector vector = coords_addCartesian(camera.position, coords_scaleCartesian(direction, magnitude));
+    for (double r = 0.5; r <= MAX_FACE_SELECT_DISTANCE; r++) {
+        heading.r = r;
+
+        CartesianVector offset = coords_fromPolar(heading);
+        CartesianVector vector = coords_addCartesian(camera.position, offset);
 
         if (vector.y <= 0) {
+            if (round(offset.x) == 0 && round(offset.z) == 0 && camera.position.y < 2) {
+                return;
+            }
+
             block = (Block) {
-                .position = (CartesianVector) {round(vector.x) + 1, -1, round(vector.z) + 1},
+                .position = (CartesianVector) {round(vector.x), -1, round(vector.z)},
                 .type = BLOCK_TYPE_GRASS
             };
 
@@ -372,8 +380,6 @@ void selectFaceTowardsGround(Camera camera) {
     if (!foundBlock) {
         return;
     }
-
-    dprint(0, 56, C_BLACK, "%d %d %d", (int)block.position.x, (int)block.position.y, (int)block.position.z);
 
     CartesianVector* vertices = world_getBlockVertices(block);
     DisplayBlockFace faceToSelect = {
