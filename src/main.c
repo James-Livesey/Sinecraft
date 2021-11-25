@@ -15,6 +15,7 @@ extern bopti_image_t img_logo;
 
 Camera candidateCamera;
 bool shouldDestroyNextBlock = false;
+bool shouldPlaceNextBlock = false;
 
 #ifdef FLAG_PROFILING
 
@@ -75,6 +76,10 @@ int getKeypresses() {
 		shouldDestroyNextBlock = true;
 	}
 
+	if (keydown(KEY_ACON)) {
+		shouldPlaceNextBlock = true;
+	}
+
 	return TIMER_CONTINUE;
 }
 
@@ -131,6 +136,10 @@ void main() {
 			camera_destroySelectedBlock(&world);
 
 			shouldDestroyNextBlock = false;
+		} else if (shouldPlaceNextBlock) {
+			camera_placeBlockOnFace(&world, camera);
+
+			shouldPlaceNextBlock = false;
 		}
 
 		dclear(C_WHITE);

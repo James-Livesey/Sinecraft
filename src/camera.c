@@ -551,3 +551,32 @@ void camera_destroySelectedBlock(World* world) {
 
     world_setBlock(world, blockToDestroy);
 }
+
+void camera_placeBlockOnFace(World* world, Camera camera) {
+    if (!blockCurrentlySelected) {
+        return;
+    }
+
+    blockCurrentlySelected = false;
+
+    CartesianVector position = getAdjacentBlockPosition(*lastSelectedFace.block, lastSelectedFace.face);
+
+    if (position.x < 0 || position.y < 0 || position.z < 0) {
+        return;
+    }
+
+    if (
+        position.x > camera.position.x - 0.5 && position.x < camera.position.x + 0.5 &&
+        position.y > camera.position.y - 0.5 && position.y < camera.position.y + 1.5 &&
+        position.z > camera.position.z - 0.5 && position.z < camera.position.z + 0.5
+    ) {
+        return;
+    }
+
+    Block blockToPlace = (Block) {
+        .position = position,
+        .type = BLOCK_TYPE_STONE
+    };
+
+    world_setBlock(world, blockToPlace);
+}
