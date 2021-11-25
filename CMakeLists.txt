@@ -34,6 +34,7 @@ set(ASSETS
 )
 set(ASSETS_fx
   assets-fx/logo.png
+  assets-fx/crosshair.png
   # ...
 )
 set(ASSETS_cg

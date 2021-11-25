@@ -11,6 +11,8 @@
 #include "world.h"
 #include "profiling.h"
 
+extern bopti_image_t img_crosshair;
+
 const int VIEWPORT_WIDTH = 128;
 const int VIEWPORT_HEIGHT = 64;
 const int VIEWPORT_CENTRE_X = VIEWPORT_WIDTH / 2;
@@ -337,6 +339,8 @@ void renderBlockFaceSelected(DisplayBlockFace face) {
 
     drawDisplayTriangle(face.vertices[0], face.vertices[1], face.vertices[2], C_INVERT);
     drawDisplayTriangle(face.vertices[0], face.vertices[2], face.vertices[3], C_INVERT);
+
+    drawDisplayLine(face.vertices[0], face.vertices[2], C_INVERT);
 }
 
 void camera_render(Camera camera, World world) {
@@ -450,6 +454,8 @@ void camera_render(Camera camera, World world) {
     if (blockCurrentlySelected) {
         renderBlockFaceSelected(lastSelectedFace);
     }
+
+    dimage((VIEWPORT_WIDTH - img_crosshair.width) / 2, (VIEWPORT_HEIGHT - img_crosshair.height) / 2, &img_crosshair);
 
     #ifdef FLAG_PROFILING
     profiling_stop(PROFILING_DRAW_FACES);
