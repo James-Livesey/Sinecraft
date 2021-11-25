@@ -40,6 +40,18 @@ void world_addBlock(World* world, Block block) {
     world->changedBlocks[world->changedBlockCount - 1] = block;
 }
 
+void world_setBlock(World* world, Block block) {
+    for (unsigned int i = 0; i < world->changedBlockCount; i++) {
+        if (coords_equalCartesian(block.position, world->changedBlocks[i].position)) {
+            world->changedBlocks[i] = block;
+
+            return;
+        }
+    }
+
+    world_addBlock(world, block);
+}
+
 Block world_getBlock(World world, CartesianVector position) {
     for (unsigned int i = 0; i < world.changedBlockCount; i++) {
         if (coords_equalCartesian(position, world.changedBlocks[i].position)) {

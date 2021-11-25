@@ -353,16 +353,20 @@ void camera_render(Camera camera, World world) {
     blockCurrentlySelected = false;
 
     for (unsigned int i = 0; i < world.changedBlockCount; i++) {
-        Block block = world.changedBlocks[i];
-        CartesianVector* vertices = world_getBlockVertices(block);
+        Block* block = &world.changedBlocks[i];
+        CartesianVector* vertices = world_getBlockVertices(*block);
         DisplayCoords pixelsToSet[8];
         int vertexZValues[8];
         bool faceStates[6];
 
+        if (block->type == BLOCK_TYPE_AIR) {
+            continue; // Don't render air
+        }
+
         setRenderFaceStates(faceStates, camera, vertices);
 
         for (unsigned int face = 0; face < 6; face++) {
-            if (adjacentBlockIsFilled(world, block, face)) {
+            if (adjacentBlockIsFilled(world, *block, face)) {
                 faceStates[face] = false;
             }
         }
@@ -419,10 +423,10 @@ void camera_render(Camera camera, World world) {
             }
 
             DisplayBlockFace faceToAdd = {
-                .block = &block,
+                .block = block,
                 .face = face,
                 .z = zSum / 4,
-                .texture = world_getBlockTexture(block.type, face)
+                .texture = world_getBlockTexture(block->type, face)
             };
 
             for (unsigned int i = 0; i < 4; i++) {
@@ -466,4 +470,16 @@ void camera_render(Camera camera, World world) {
     #ifdef FLAG_PROFILING
     profiling_stop(PROFILING_RENDER_TIME);
     #endif
+}
+
+void camera_destroySelectedBlock(World* world) {
+    if (!blockCurrentlySelected) {
+        return;
+    }
+
+    Block blockToDestroy = *lastSelectedFace.block;
+
+    blockToDestroy.type = BLOCK_TYPE_AIR;
+
+    world_setBlock(world, blockToDestroy);
 }

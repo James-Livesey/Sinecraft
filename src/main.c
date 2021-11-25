@@ -140,5 +140,9 @@ void main() {
 		if (keydown(KEY_RIGHT)) {
 			camera.heading.ariz += 12;
 		}
+
+		if (keydown(KEY_DEL)) {
+			camera_destroySelectedBlock(&world);
+		}
 	}
 }

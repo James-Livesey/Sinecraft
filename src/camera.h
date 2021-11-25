@@ -51,5 +51,6 @@ CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, Cartesian
 
 void camera_moveInAriz(Camera *camera, double distance, double ariz);
 void camera_render(Camera camera, World world);
+void camera_destroySelectedBlock(World* world);
 
 #endif

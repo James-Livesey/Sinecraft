@@ -28,6 +28,7 @@ CartesianVector* world_getBlockVertices(Block block);
 
 World world_default();
 void world_addBlock(World* world, Block block);
+void world_setBlock(World* world, Block block);
 Block world_getBlock(World world, CartesianVector position);
 
 int world_getBlockTexture(int blockType, int face);
