@@ -10,14 +10,14 @@ uint32_t ticks = 0;
 uint32_t startTicks[16];
 unsigned int recordedTicks[16];
 
-int tick() {
+int profiling_tick() {
     ticks++;
 
     return TIMER_CONTINUE;
 }
 
 void profiling_init() {
-    int timer = timer_configure(TIMER_ETMU, 100, GINT_CALL(tick));
+    int timer = timer_configure(TIMER_ETMU, 100, GINT_CALL(profiling_tick));
 
     timer_start(timer);
 }

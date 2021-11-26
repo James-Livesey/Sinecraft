@@ -23,6 +23,8 @@ set(SOURCES
   src/world.c
   src/camera.h
   src/camera.c
+  src/physics.h
+  src/physics.c
   src/profiling.h
   src/profiling.c
   src/main.c

@@ -9,6 +9,7 @@
 #include "textures.h"
 #include "world.h"
 #include "camera.h"
+#include "physics.h"
 #include "profiling.h"
 
 extern bopti_image_t img_logo;
@@ -16,6 +17,7 @@ extern bopti_image_t img_logo;
 Camera candidateCamera;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
+bool shouldJump = false;
 
 #ifdef FLAG_PROFILING
 
@@ -80,6 +82,10 @@ int getKeypresses() {
 		shouldPlaceNextBlock = true;
 	}
 
+	if (keydown(KEY_DIV)) {
+		shouldJump = true;
+	}
+
 	return TIMER_CONTINUE;
 }
 
@@ -87,9 +93,11 @@ void main() {
 	bool showLogo = true;
 
 	textures_init();
+	physics_init();
 
 	World world = world_default();
 	Camera camera;
+	PhysicsSimulation sim = physics_default(&candidateCamera, world);
 
 	candidateCamera = camera_default();
 
@@ -132,6 +140,8 @@ void main() {
 	while (true) {
 		camera = candidateCamera;
 
+		physics_updateDelta();
+
 		if (shouldDestroyNextBlock) {
 			camera_destroySelectedBlock(&world);
 
@@ -140,6 +150,10 @@ void main() {
 			camera_placeBlockOnFace(&world, camera);
 
 			shouldPlaceNextBlock = false;
+		} else if (shouldJump) {
+			physics_jump(&sim);
+
+			shouldJump = false;
 		}
 
 		dclear(C_WHITE);
@@ -149,6 +163,8 @@ void main() {
 		#endif
 
 		camera_render(camera, world);
+
+		physics_update(&sim);
 
 		if (showLogo) {
 			dimage((128 - img_logo.width) / 2, 10, &img_logo);
