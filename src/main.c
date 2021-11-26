@@ -14,6 +14,7 @@
 
 extern bopti_image_t img_logo;
 
+World world;
 Camera candidateCamera;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
@@ -43,19 +44,19 @@ void showProfile() {
 
 int getKeypresses() {
 	if (keydown(KEY_8)) {
-		camera_moveInAriz(&candidateCamera, 0.2, candidateCamera.heading.ariz);
+		camera_moveInAriz(&candidateCamera, world, 0.2, candidateCamera.heading.ariz);
 	}
 
 	if (keydown(KEY_5)) {
-		camera_moveInAriz(&candidateCamera, -0.2, candidateCamera.heading.ariz);
+		camera_moveInAriz(&candidateCamera, world, -0.2, candidateCamera.heading.ariz);
 	}
 
 	if (keydown(KEY_4)) {
-		camera_moveInAriz(&candidateCamera, 0.2, candidateCamera.heading.ariz - 90);
+		camera_moveInAriz(&candidateCamera, world, 0.2, candidateCamera.heading.ariz - 90);
 	}
 
 	if (keydown(KEY_6)) {
-		camera_moveInAriz(&candidateCamera, 0.2, candidateCamera.heading.ariz + 90);
+		camera_moveInAriz(&candidateCamera, world, 0.2, candidateCamera.heading.ariz + 90);
 	}
 
 	if (keydown(KEY_UP)) {
@@ -95,9 +96,9 @@ void main() {
 	textures_init();
 	physics_init();
 
-	World world = world_default();
+	world = world_default();
 	Camera camera;
-	PhysicsSimulation sim = physics_default(&candidateCamera, world);
+	PhysicsSimulation sim = physics_default(&candidateCamera, &world);
 
 	candidateCamera = camera_default();
 
@@ -128,6 +129,15 @@ void main() {
 		.position = (CartesianVector) {1, 3, 1},
 		.type = BLOCK_TYPE_LEAVES
 	});
+
+	// candidateCamera.position.x = 1;
+	// candidateCamera.position.y = 2;
+	// candidateCamera.position.z = 1;
+
+	// world_addBlock(&world, (Block) {
+	// 	.position = (CartesianVector) {1, 0, 1},
+	// 	.type = BLOCK_TYPE_WOOD
+	// });
 
 	#ifdef FLAG_PROFILING
 	profiling_init();

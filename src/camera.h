@@ -49,7 +49,7 @@ Camera camera_default();
 DisplayCoords camera_orthToPersp(double x, double y, double distance, double fovDeg);
 CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, CartesianVector cameraPosition, PolarVector cameraHeading);
 
-void camera_moveInAriz(Camera *camera, double distance, double ariz);
+void camera_moveInAriz(Camera *camera, World world, double distance, double ariz);
 void camera_render(Camera camera, World world);
 void camera_destroySelectedBlock(World* world);
 void camera_placeBlockOnFace(World* world, Camera camera);

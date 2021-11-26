@@ -19,6 +19,7 @@ CartesianVector coords_defaultCartesian();
 CartesianVector coords_scaleCartesian(CartesianVector vector, double scaleFactor);
 CartesianVector coords_addCartesian(CartesianVector a, CartesianVector b);
 CartesianVector coords_multiplyCartesian(CartesianVector a, CartesianVector b);
+CartesianVector coords_roundCartesian(CartesianVector vector);
 CartesianVector coords_fromPolar(PolarVector polar);
 CartesianVector coords_rotateCartesian(CartesianVector vector, PolarVector rotation);
 bool coords_equalCartesian(CartesianVector a, CartesianVector b);

@@ -20,6 +20,10 @@ CartesianVector coords_multiplyCartesian(CartesianVector a, CartesianVector b) {
     return (CartesianVector) {a.x * b.x, a.y * b.y, a.z * b.z};
 }
 
+CartesianVector coords_roundCartesian(CartesianVector vector) {
+    return (CartesianVector) {round(vector.x), round(vector.y), round(vector.z)};
+}
+
 bool coords_equalCartesian(CartesianVector a, CartesianVector b) {
     return a.x == b.x && a.y == b.y && a.z == b.z;
 }
