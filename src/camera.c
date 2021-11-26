@@ -31,6 +31,7 @@ int lastFov = 0;
 int verticalFov = 0;
 
 DisplayBlockFace lastSelectedFace;
+Block lastSelectedGroundBlock;
 bool blockCurrentlySelected = false;
 bool blockIsGround = false;
 
@@ -352,7 +353,6 @@ void selectFaceTowardsGround(Camera camera) {
     heading.incl += 90;
     heading.incl *= -1;
 
-    Block block;
     bool foundBlock = false;
 
     for (double r = 0.5; r <= MAX_FACE_SELECT_DISTANCE; r++) {
@@ -366,7 +366,7 @@ void selectFaceTowardsGround(Camera camera) {
                 return;
             }
 
-            block = (Block) {
+            lastSelectedGroundBlock = (Block) {
                 .position = (CartesianVector) {round(vector.x), -1, round(vector.z)},
                 .type = BLOCK_TYPE_GRASS
             };
@@ -381,9 +381,9 @@ void selectFaceTowardsGround(Camera camera) {
         return;
     }
 
-    CartesianVector* vertices = world_getBlockVertices(block);
+    CartesianVector* vertices = world_getBlockVertices(lastSelectedGroundBlock);
     DisplayBlockFace faceToSelect = {
-        .block = &block,
+        .block = &lastSelectedGroundBlock,
         .face = FACE_PY,
         .z = 0,
         .texture = BLOCK_TYPE_GRASS
@@ -567,7 +567,7 @@ void camera_placeBlockOnFace(World* world, Camera camera) {
 
     if (
         position.x > camera.position.x - 0.5 && position.x < camera.position.x + 0.5 &&
-        position.y > camera.position.y - 0.5 && position.y < camera.position.y + 1.5 &&
+        position.y > camera.position.y - 1.5 && position.y < camera.position.y + 0.5 &&
         position.z > camera.position.z - 0.5 && position.z < camera.position.z + 0.5
     ) {
         return;
