@@ -14,6 +14,7 @@
 
 extern bopti_image_t img_logo;
 
+World world;
 Camera candidateCamera;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
@@ -22,174 +23,183 @@ bool shouldJump = false;
 #ifdef FLAG_PROFILING
 
 void showProfile() {
-	dclear(C_WHITE);
+    dclear(C_WHITE);
 
-	dfont_default();
-	dprint(0, 0, C_BLACK, "DEBUG PROFILING");
-	dprint(0, 8, C_BLACK, "Render: %dus", profiling_getTicks(PROFILING_RENDER_TIME) * 100);
-	dprint(0, 16, C_BLACK, "- W2C: %dus", profiling_getTicks(PROFILING_WORLD_TO_CAMERA) * 100);
-	dprint(0, 24, C_BLACK, "- O2P: %dus", profiling_getTicks(PROFILING_ORTH_TO_PERSP) * 100);
-	dprint(0, 32, C_BLACK, "- Edges: %dus", profiling_getTicks(PROFILING_FIND_EDGES) * 100);
-	dprint(0, 40, C_BLACK, "- Faces: %dus", profiling_getTicks(PROFILING_DRAW_FACES) * 100);
+    dfont_default();
+    dprint(0, 0, C_BLACK, "DEBUG PROFILING");
+    dprint(0, 8, C_BLACK, "Render: %dus", profiling_getTicks(PROFILING_RENDER_TIME) * 100);
+    dprint(0, 16, C_BLACK, "- W2C: %dus", profiling_getTicks(PROFILING_WORLD_TO_CAMERA) * 100);
+    dprint(0, 24, C_BLACK, "- O2P: %dus", profiling_getTicks(PROFILING_ORTH_TO_PERSP) * 100);
+    dprint(0, 32, C_BLACK, "- Edges: %dus", profiling_getTicks(PROFILING_FIND_EDGES) * 100);
+    dprint(0, 40, C_BLACK, "- Faces: %dus", profiling_getTicks(PROFILING_DRAW_FACES) * 100);
 
-	dupdate();
+    dupdate();
 
-	while (keydown(KEY_LOG)) {
-		clearevents();
-	}
+    while (keydown(KEY_LOG)) {
+        clearevents();
+    }
 }
 
 #endif
 
 int getKeypresses() {
-	if (keydown(KEY_8)) {
-		camera_moveInAriz(&candidateCamera, 0.2, candidateCamera.heading.ariz);
-	}
+    if (keydown(KEY_8)) {
+        camera_moveInAriz(&candidateCamera, world, 0.2, candidateCamera.heading.ariz);
+    }
 
-	if (keydown(KEY_5)) {
-		camera_moveInAriz(&candidateCamera, -0.2, candidateCamera.heading.ariz);
-	}
+    if (keydown(KEY_5)) {
+        camera_moveInAriz(&candidateCamera, world, -0.2, candidateCamera.heading.ariz);
+    }
 
-	if (keydown(KEY_4)) {
-		camera_moveInAriz(&candidateCamera, 0.2, candidateCamera.heading.ariz - 90);
-	}
+    if (keydown(KEY_4)) {
+        camera_moveInAriz(&candidateCamera, world, 0.2, candidateCamera.heading.ariz - 90);
+    }
 
-	if (keydown(KEY_6)) {
-		camera_moveInAriz(&candidateCamera, 0.2, candidateCamera.heading.ariz + 90);
-	}
+    if (keydown(KEY_6)) {
+        camera_moveInAriz(&candidateCamera, world, 0.2, candidateCamera.heading.ariz + 90);
+    }
 
-	if (keydown(KEY_UP)) {
-		candidateCamera.heading.incl -= 5;
-	}
+    if (keydown(KEY_UP)) {
+        candidateCamera.heading.incl -= 5;
+    }
 
-	if (keydown(KEY_DOWN)) {
-		candidateCamera.heading.incl += 5;
-	}
+    if (keydown(KEY_DOWN)) {
+        candidateCamera.heading.incl += 5;
+    }
 
-	if (keydown(KEY_LEFT)) {
-		candidateCamera.heading.ariz -= 5;
-	}
+    if (keydown(KEY_LEFT)) {
+        candidateCamera.heading.ariz -= 5;
+    }
 
-	if (keydown(KEY_RIGHT)) {
-		candidateCamera.heading.ariz += 5;
-	}
+    if (keydown(KEY_RIGHT)) {
+        candidateCamera.heading.ariz += 5;
+    }
 
-	if (keydown(KEY_DEL)) {
-		shouldDestroyNextBlock = true;
-	}
+    if (keydown(KEY_DEL)) {
+        shouldDestroyNextBlock = true;
+    }
 
-	if (keydown(KEY_ACON)) {
-		shouldPlaceNextBlock = true;
-	}
+    if (keydown(KEY_ACON)) {
+        shouldPlaceNextBlock = true;
+    }
 
-	if (keydown(KEY_DIV)) {
-		shouldJump = true;
-	}
+    if (keydown(KEY_DIV)) {
+        shouldJump = true;
+    }
 
-	return TIMER_CONTINUE;
+    return TIMER_CONTINUE;
 }
 
 void main() {
-	bool showLogo = true;
+    bool showLogo = true;
 
-	textures_init();
-	physics_init();
+    textures_init();
+    physics_init();
 
-	World world = world_default();
-	Camera camera;
-	PhysicsSimulation sim = physics_default(&candidateCamera, world);
+    world = world_default();
+    Camera camera;
+    PhysicsSimulation sim = physics_default(&candidateCamera, &world);
 
-	candidateCamera = camera_default();
+    candidateCamera = camera_default();
 
-	candidateCamera.position.x = -4;
-	candidateCamera.position.y = 1;
-	candidateCamera.position.z = 1;
+    candidateCamera.position.x = -4;
+    candidateCamera.position.y = 1;
+    candidateCamera.position.z = 1;
 
-	world_addBlock(&world, (Block) {
-		.position = (CartesianVector) {1, 0, 1},
-		.type = BLOCK_TYPE_WOOD
-	});
+    world_addBlock(&world, (Block) {
+        .position = (CartesianVector) {1, 0, 1},
+        .type = BLOCK_TYPE_WOOD
+    });
 
-	world_addBlock(&world, (Block) {
-		.position = (CartesianVector) {1, 1, 1},
-		.type = BLOCK_TYPE_WOOD
-	});
+    world_addBlock(&world, (Block) {
+        .position = (CartesianVector) {1, 1, 1},
+        .type = BLOCK_TYPE_WOOD
+    });
 
-	for (unsigned int x = 0; x < 3; x++) {
-		for (unsigned int z = 0; z < 3; z++) {
-			world_addBlock(&world, (Block) {
-				.position = (CartesianVector) {x, 2, z},
-				.type = BLOCK_TYPE_LEAVES
-			});
-		}
-	}
+    for (unsigned int x = 0; x < 3; x++) {
+        for (unsigned int z = 0; z < 3; z++) {
+            world_addBlock(&world, (Block) {
+                .position = (CartesianVector) {x, 2, z},
+                .type = BLOCK_TYPE_LEAVES
+            });
+        }
+    }
 
-	world_addBlock(&world, (Block) {
-		.position = (CartesianVector) {1, 3, 1},
-		.type = BLOCK_TYPE_LEAVES
-	});
+    world_addBlock(&world, (Block) {
+        .position = (CartesianVector) {1, 3, 1},
+        .type = BLOCK_TYPE_LEAVES
+    });
 
-	#ifdef FLAG_PROFILING
-	profiling_init();
-	#endif
+    // candidateCamera.position.x = 1;
+    // candidateCamera.position.y = 2;
+    // candidateCamera.position.z = 1;
 
-	int timer = timer_configure(TIMER_ETMU, 1e5, GINT_CALL(getKeypresses));
+    // world_addBlock(&world, (Block) {
+    //     .position = (CartesianVector) {1, 0, 1},
+    //     .type = BLOCK_TYPE_WOOD
+    // });
 
-	timer_start(timer);
+    #ifdef FLAG_PROFILING
+    profiling_init();
+    #endif
 
-	while (true) {
-		camera = candidateCamera;
+    int timer = timer_configure(TIMER_ETMU, 1e5, GINT_CALL(getKeypresses));
 
-		physics_updateDelta();
+    timer_start(timer);
 
-		if (shouldDestroyNextBlock) {
-			camera_destroySelectedBlock(&world);
+    while (true) {
+        camera = candidateCamera;
 
-			shouldDestroyNextBlock = false;
-		} else if (shouldPlaceNextBlock) {
-			camera_placeBlockOnFace(&world, camera);
+        physics_updateDelta();
 
-			shouldPlaceNextBlock = false;
-		} else if (shouldJump) {
-			physics_jump(&sim);
+        if (shouldDestroyNextBlock) {
+            camera_destroySelectedBlock(&world);
 
-			shouldJump = false;
-		}
+            shouldDestroyNextBlock = false;
+        } else if (shouldPlaceNextBlock) {
+            camera_placeBlockOnFace(&world, camera);
 
-		dclear(C_WHITE);
+            shouldPlaceNextBlock = false;
+        } else if (shouldJump) {
+            physics_jump(&sim);
 
-		#ifdef FLAG_PROFILING
-		profiling_reset();
-		#endif
+            shouldJump = false;
+        }
 
-		camera_render(camera, world);
+        dclear(C_WHITE);
 
-		physics_update(&sim);
+        #ifdef FLAG_PROFILING
+        profiling_reset();
+        #endif
 
-		if (showLogo) {
-			dimage((128 - img_logo.width) / 2, 10, &img_logo);
-		}
+        camera_render(camera, world);
 
-		#ifdef FLAG_PROFILING
-		dprint(0, 0, C_BLACK, "%dFPS", 10000 / profiling_getTicks(PROFILING_RENDER_TIME));
-		#endif
+        physics_update(&sim);
 
-		dupdate();
+        if (showLogo) {
+            dimage((128 - img_logo.width) / 2, 10, &img_logo);
+        }
 
-		clearevents();
+        #ifdef FLAG_PROFILING
+        dprint(0, 0, C_BLACK, "%dFPS", 10000 / profiling_getTicks(PROFILING_RENDER_TIME));
+        #endif
 
-		if (keydown(KEY_MENU)) {
-			gint_osmenu();
-		}
+        dupdate();
 
-		if (keydown(KEY_EXIT)) {
-			showLogo = false;
-		}
+        clearevents();
 
-		#ifdef FLAG_PROFILING
-		if (keydown(KEY_LOG)) {
-			showProfile();
-		}
-		#endif
-	}
+        if (keydown(KEY_MENU)) {
+            gint_osmenu();
+        }
+
+        if (keydown(KEY_EXIT)) {
+            showLogo = false;
+        }
+
+        #ifdef FLAG_PROFILING
+        if (keydown(KEY_LOG)) {
+            showProfile();
+        }
+        #endif
+    }
 }

@@ -7,7 +7,6 @@
 
 unsigned int currentTime = 0;
 unsigned int lastTime = 0;
-unsigned int lastJumpTime = 0;
 
 int physics_tick() {
     currentTime++;
@@ -23,7 +22,7 @@ void physics_init() {
     timer_start(timer);
 }
 
-PhysicsSimulation physics_default(Camera* camera, World world) {
+PhysicsSimulation physics_default(Camera* camera, World* world) {
     return (PhysicsSimulation) {
         .camera = camera,
         .world = world,
@@ -36,8 +35,10 @@ void physics_update(PhysicsSimulation* sim) {
     double delta = currentTime - lastTime;
     double initialVelocity = sim->yVelocity;
 
-    // s = ut + (1/2)a(t^2)
-    double distanceToMove = (initialVelocity * (currentTime / 1000)) - (0.5 * sim->yAcceleration * SQUARE(delta / 1000));
+    CartesianVector initialPosition = sim->camera->position;
+
+    // s = ut - (1/2)a(t^2)
+    double distanceToMove = (initialVelocity * (delta / 1000)) - (0.5 * sim->yAcceleration * SQUARE(delta / 1000));
 
     sim->camera->position = coords_addCartesian(sim->camera->position, (CartesianVector) {0, distanceToMove, 0});
 
@@ -46,25 +47,16 @@ void physics_update(PhysicsSimulation* sim) {
 
     CartesianVector positionBelow = (CartesianVector) {
         round(sim->camera->position.x),
-        round(sim->camera->position.y - 1.2),
+        round(sim->camera->position.y - 2),
         round(sim->camera->position.z)
     };
-    Block blockBelow = world_getBlock(sim->world, positionBelow);
+    Block blockBelow = world_getBlock(*(sim->world), positionBelow);
 
-    if (sim->camera->position.y < 1) {
+    if (sim->camera->position.y < 1 || blockBelow.type != BLOCK_TYPE_AIR) {
         sim->yVelocity = 0;
         sim->yAcceleration = 0;
 
-        sim->camera->position = (CartesianVector) {
-            sim->camera->position.x,
-            1,
-            sim->camera->position.z
-        };
-    } else if (blockBelow.type != BLOCK_TYPE_AIR) {
-        sim->yVelocity = 0;
-        sim->yAcceleration = 0;
-
-        sim->camera->position = coords_addCartesian(sim->camera->position, (CartesianVector) {0, 0.1, 0});
+        sim->camera->position = initialPosition;
     } else {
         sim->yAcceleration = -GRAVITATIONAL_FIELD_STRENGTH;
     }
@@ -77,17 +69,15 @@ void physics_updateDelta() {
 void physics_jump(PhysicsSimulation* sim) {
     CartesianVector positionBelow = (CartesianVector) {
         round(sim->camera->position.x),
-        round(sim->camera->position.y - 1.2),
+        round(sim->camera->position.y - 2),
         round(sim->camera->position.z)
     };
-    Block blockBelow = world_getBlock(sim->world, positionBelow);
+    Block blockBelow = world_getBlock(*(sim->world), positionBelow);
 
-    if (sim->camera->position.y > 1.5 && (blockBelow.type == BLOCK_TYPE_AIR || currentTime - lastJumpTime < 200)) {
+    if (sim->camera->position.y > 1.1 && blockBelow.type == BLOCK_TYPE_AIR) {
         return;
     }
 
     // v = sqrt((u^2) + 2as)
-    sim->yVelocity = 0.4;
-
-    lastJumpTime = currentTime;
+    sim->yVelocity = sqrt(2 * GRAVITATIONAL_FIELD_STRENGTH * 1.5);
 }

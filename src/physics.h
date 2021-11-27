@@ -6,17 +6,17 @@
 #include "world.h"
 #include "camera.h"
 
-#define GRAVITATIONAL_FIELD_STRENGTH 10
+#define GRAVITATIONAL_FIELD_STRENGTH 100
 
 typedef struct {
     Camera* camera;
-    World world;
+    World* world;
     double yVelocity;
     double yAcceleration;
 } PhysicsSimulation;
 
 void physics_init();
-PhysicsSimulation physics_default(Camera* camera, World world);
+PhysicsSimulation physics_default(Camera* camera, World* world);
 void physics_update(PhysicsSimulation* sim);
 void physics_updateDelta();
 void physics_jump(PhysicsSimulation* sim);

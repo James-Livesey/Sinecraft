@@ -93,12 +93,25 @@ CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, Cartesian
     return result;
 }
 
-void camera_moveInAriz(Camera* camera, double distance, double ariz) {
+void camera_moveInAriz(Camera* camera, World world, double distance, double ariz) {
+    CartesianVector previousPosition = camera->position;
+
     camera->position = coords_addCartesian(camera->position, coords_fromPolar((PolarVector) {
         distance,
         90,
         ariz
     }));
+
+    CartesianVector bodyPosition = camera->position;
+
+    bodyPosition.y--;
+
+    bool headClipping = world_getBlock(world, coords_roundCartesian(camera->position)).type != BLOCK_TYPE_AIR;
+    bool bodyClipping = world_getBlock(world, coords_roundCartesian(bodyPosition)).type != BLOCK_TYPE_AIR;
+
+    if (headClipping || bodyClipping) {
+        camera->position = previousPosition;
+    }
 }
 
 CartesianVector getAdjacentBlockPosition(Block block, unsigned int face) {
