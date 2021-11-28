@@ -25,6 +25,8 @@ set(SOURCES
   src/camera.c
   src/physics.h
   src/physics.c
+  src/inventory.h
+  src/inventory.c
   src/profiling.h
   src/profiling.c
   src/main.c
@@ -37,6 +39,7 @@ set(ASSETS
 set(ASSETS_fx
   assets-fx/logo.png
   assets-fx/crosshair.png
+  assets-fx/slot.png
   # ...
 )
 set(ASSETS_cg

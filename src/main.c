@@ -10,12 +10,14 @@
 #include "world.h"
 #include "camera.h"
 #include "physics.h"
+#include "inventory.h"
 #include "profiling.h"
 
 extern bopti_image_t img_logo;
 
 World world;
 Camera candidateCamera;
+Inventory inventory;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
@@ -87,6 +89,30 @@ int getKeypresses() {
         shouldJump = true;
     }
 
+    if (keydown(KEY_F1)) {
+        inventory.selectedHotbarSlot = 0;
+    }
+
+    if (keydown(KEY_F2)) {
+        inventory.selectedHotbarSlot = 1;
+    }
+
+    if (keydown(KEY_F3)) {
+        inventory.selectedHotbarSlot = 2;
+    }
+
+    if (keydown(KEY_F4)) {
+        inventory.selectedHotbarSlot = 3;
+    }
+
+    if (keydown(KEY_F5)) {
+        inventory.selectedHotbarSlot = 4;
+    }
+
+    if (keydown(KEY_F6)) {
+        inventory.selectedHotbarSlot = 5;
+    }
+
     return TIMER_CONTINUE;
 }
 
@@ -101,6 +127,7 @@ void main() {
     PhysicsSimulation sim = physics_default(&candidateCamera, &world);
 
     candidateCamera = camera_default();
+    inventory = inventory_default();
 
     candidateCamera.position.x = -4;
     candidateCamera.position.y = 1;
@@ -178,6 +205,8 @@ void main() {
 
         if (showLogo) {
             dimage((128 - img_logo.width) / 2, 10, &img_logo);
+        } else {
+            inventory_renderHotbar(inventory);
         }
 
         #ifdef FLAG_PROFILING

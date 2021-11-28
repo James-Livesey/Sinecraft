@@ -5,3 +5,7 @@ logo.png:
 crosshair.png:
   type: bopti-image
   name: img_crosshair
+
+slot.png:
+  type: bopti-image
+  name: img_slot
