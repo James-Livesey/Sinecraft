@@ -31,9 +31,10 @@ void showProfile() {
     dprint(0, 0, C_BLACK, "DEBUG PROFILING");
     dprint(0, 8, C_BLACK, "Render: %dus", profiling_getTicks(PROFILING_RENDER_TIME) * 100);
     dprint(0, 16, C_BLACK, "- W2C: %dus", profiling_getTicks(PROFILING_WORLD_TO_CAMERA) * 100);
-    dprint(0, 24, C_BLACK, "- O2P: %dus", profiling_getTicks(PROFILING_ORTH_TO_PERSP) * 100);
-    dprint(0, 32, C_BLACK, "- Edges: %dus", profiling_getTicks(PROFILING_FIND_EDGES) * 100);
-    dprint(0, 40, C_BLACK, "- Faces: %dus", profiling_getTicks(PROFILING_DRAW_FACES) * 100);
+    dprint(0, 24, C_BLACK, "  - Rotate: %dus", profiling_getTicks(PROFILING_W2C_ROTATE) * 100);
+    dprint(0, 32, C_BLACK, "- O2P: %dus", profiling_getTicks(PROFILING_ORTH_TO_PERSP) * 100);
+    dprint(0, 40, C_BLACK, "- Edges: %dus", profiling_getTicks(PROFILING_FIND_EDGES) * 100);
+    dprint(0, 48, C_BLACK, "- Faces: %dus", profiling_getTicks(PROFILING_DRAW_FACES) * 100);
 
     dupdate();
 

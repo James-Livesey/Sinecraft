@@ -83,7 +83,15 @@ CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, Cartesian
         cameraHeading.ariz += 180;
     }
 
+    #ifdef FLAG_PROFILING
+    profiling_start(PROFILING_W2C_ROTATE);
+    #endif
+
     CartesianVector result = coords_rotateCartesian(vector, cameraHeading);
+
+    #ifdef FLAG_PROFILING
+    profiling_stop(PROFILING_W2C_ROTATE);
+    #endif
 
     if (vector.x < 0 && vector.z >= 0) {
         result.x *= -1;
