@@ -21,6 +21,8 @@ set(SOURCES
   src/textures.c
   src/world.h
   src/world.c
+  src/items.h
+  src/items.c
   src/camera.h
   src/camera.c
   src/physics.h
@@ -40,6 +42,13 @@ set(ASSETS_fx
   assets-fx/logo.png
   assets-fx/crosshair.png
   assets-fx/slot.png
+  assets-fx/stone.png
+  assets-fx/grass.png
+  assets-fx/dirt.png
+  assets-fx/cobblestone.png
+  assets-fx/plank.png
+  assets-fx/wood.png
+  assets-fx/leaves.png
   # ...
 )
 set(ASSETS_cg

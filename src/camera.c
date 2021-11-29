@@ -573,7 +573,7 @@ void camera_destroySelectedBlock(World* world) {
     world_setBlock(world, blockToDestroy);
 }
 
-void camera_placeBlockOnFace(World* world, Camera camera) {
+void camera_placeBlockOnFace(World* world, Camera camera, unsigned int type) {
     if (!blockCurrentlySelected) {
         return;
     }
@@ -596,7 +596,7 @@ void camera_placeBlockOnFace(World* world, Camera camera) {
 
     Block blockToPlace = (Block) {
         .position = position,
-        .type = BLOCK_TYPE_STONE
+        .type = type
     };
 
     world_setBlock(world, blockToPlace);

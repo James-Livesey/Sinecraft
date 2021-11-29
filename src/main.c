@@ -8,6 +8,7 @@
 #include "common.h"
 #include "textures.h"
 #include "world.h"
+#include "items.h"
 #include "camera.h"
 #include "physics.h"
 #include "inventory.h"
@@ -122,6 +123,7 @@ void main() {
 
     textures_init();
     physics_init();
+    items_init();
 
     world = world_default();
     Camera camera;
@@ -167,6 +169,15 @@ void main() {
     //     .type = BLOCK_TYPE_WOOD
     // });
 
+    inventory.slots[0].type = BLOCK_TYPE_STONE;
+    inventory.slots[0].count = 1;
+    inventory.slots[1].type = BLOCK_TYPE_GRASS;
+    inventory.slots[1].count = 1;
+    inventory.slots[2].type = BLOCK_TYPE_WOOD;
+    inventory.slots[2].count = 1;
+    inventory.slots[3].type = BLOCK_TYPE_LEAVES;
+    inventory.slots[3].count = 1;
+
     #ifdef FLAG_PROFILING
     profiling_init();
     #endif
@@ -185,9 +196,13 @@ void main() {
 
             shouldDestroyNextBlock = false;
         } else if (shouldPlaceNextBlock) {
-            camera_placeBlockOnFace(&world, camera);
+            InventorySlot slot = inventory.slots[inventory.selectedHotbarSlot];
 
-            shouldPlaceNextBlock = false;
+            if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
+                camera_placeBlockOnFace(&world, camera, slot.type);
+
+                shouldPlaceNextBlock = false;
+            }
         } else if (shouldJump) {
             physics_jump(&sim);
 

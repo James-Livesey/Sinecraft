@@ -9,3 +9,31 @@ crosshair.png:
 slot.png:
   type: bopti-image
   name: img_slot
+
+stone.png:
+  type: bopti-image
+  name: img_item_stone
+
+grass.png:
+  type: bopti-image
+  name: img_item_grass
+
+dirt.png:
+  type: bopti-image
+  name: img_item_dirt
+
+cobblestone.png:
+  type: bopti-image
+  name: img_item_cobblestone
+
+plank.png:
+  type: bopti-image
+  name: img_item_plank
+
+wood.png:
+  type: bopti-image
+  name: img_item_wood
+
+leaves.png:
+  type: bopti-image
+  name: img_item_leaves
