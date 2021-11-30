@@ -22,6 +22,7 @@ Inventory inventory;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
+bool shouldOpenInventory = false;
 
 #ifdef FLAG_PROFILING
 
@@ -113,6 +114,10 @@ int getKeypresses() {
 
     if (keydown(KEY_F6)) {
         inventory.selectedHotbarSlot = 5;
+    }
+
+    if (keydown(KEY_OPTN)) {
+        shouldOpenInventory = true;
     }
 
     return TIMER_CONTINUE;
@@ -207,6 +212,10 @@ void main() {
             physics_jump(&sim);
 
             shouldJump = false;
+        } else if (shouldOpenInventory) {
+            inventory_open(&inventory);
+
+            shouldOpenInventory = false;
         }
 
         dclear(C_WHITE);
