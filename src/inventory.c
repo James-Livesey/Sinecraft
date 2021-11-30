@@ -5,6 +5,7 @@
 #include "inventory.h"
 #include "world.h"
 #include "items.h"
+#include "physics.h"
 
 extern bopti_image_t img_slot;
 
@@ -148,5 +149,5 @@ void inventory_open(Inventory* inventory) {
 
     closeInventory:
 
-    clearevents();
+    physics_updateDelta();
 }
