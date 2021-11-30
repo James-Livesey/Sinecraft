@@ -149,5 +149,9 @@ void inventory_open(Inventory* inventory) {
 
     closeInventory:
 
+    if (selectedSlot < SLOTS_IN_ROW) {
+        inventory->selectedHotbarSlot = selectedSlot;
+    }
+
     physics_updateDelta();
 }

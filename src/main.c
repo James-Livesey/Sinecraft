@@ -19,6 +19,7 @@ extern bopti_image_t img_logo;
 World world;
 Camera candidateCamera;
 Inventory inventory;
+bool skipKeypresses = false;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
@@ -48,6 +49,10 @@ void showProfile() {
 #endif
 
 int getKeypresses() {
+    if (skipKeypresses) {
+        return TIMER_CONTINUE;
+    }
+
     if (keydown(KEY_8)) {
         camera_moveInAriz(&candidateCamera, world, 0.2, candidateCamera.heading.ariz);
     }
@@ -213,8 +218,11 @@ void main() {
 
             shouldJump = false;
         } else if (shouldOpenInventory) {
+            skipKeypresses = true;
+
             inventory_open(&inventory);
 
+            skipKeypresses = false;
             shouldOpenInventory = false;
         }
 
