@@ -19,9 +19,11 @@ extern bopti_image_t img_logo;
 World world;
 Camera candidateCamera;
 Inventory inventory;
+bool skipKeypresses = false;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
+bool shouldOpenInventory = false;
 
 #ifdef FLAG_PROFILING
 
@@ -47,6 +49,10 @@ void showProfile() {
 #endif
 
 int getKeypresses() {
+    if (skipKeypresses) {
+        return TIMER_CONTINUE;
+    }
+
     if (keydown(KEY_8)) {
         camera_moveInAriz(&candidateCamera, world, 0.2, candidateCamera.heading.ariz);
     }
@@ -113,6 +119,10 @@ int getKeypresses() {
 
     if (keydown(KEY_F6)) {
         inventory.selectedHotbarSlot = 5;
+    }
+
+    if (keydown(KEY_OPTN)) {
+        shouldOpenInventory = true;
     }
 
     return TIMER_CONTINUE;
@@ -207,6 +217,13 @@ void main() {
             physics_jump(&sim);
 
             shouldJump = false;
+        } else if (shouldOpenInventory) {
+            skipKeypresses = true;
+
+            inventory_open(&inventory);
+
+            skipKeypresses = false;
+            shouldOpenInventory = false;
         }
 
         dclear(C_WHITE);
