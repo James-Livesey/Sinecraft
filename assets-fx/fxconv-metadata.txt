@@ -1,39 +1,39 @@
 logo.png:
-  type: bopti-image
-  name: img_logo
+    type: bopti-image
+    name: img_logo
 
 crosshair.png:
-  type: bopti-image
-  name: img_crosshair
+    type: bopti-image
+    name: img_crosshair
 
 slot.png:
-  type: bopti-image
-  name: img_slot
+    type: bopti-image
+    name: img_slot
 
 stone.png:
-  type: bopti-image
-  name: img_item_stone
+    type: bopti-image
+    name: img_item_stone
 
 grass.png:
-  type: bopti-image
-  name: img_item_grass
+    type: bopti-image
+    name: img_item_grass
 
 dirt.png:
-  type: bopti-image
-  name: img_item_dirt
+    type: bopti-image
+    name: img_item_dirt
 
 cobblestone.png:
-  type: bopti-image
-  name: img_item_cobblestone
+    type: bopti-image
+    name: img_item_cobblestone
 
 plank.png:
-  type: bopti-image
-  name: img_item_plank
+    type: bopti-image
+    name: img_item_plank
 
 wood.png:
-  type: bopti-image
-  name: img_item_wood
+    type: bopti-image
+    name: img_item_wood
 
 leaves.png:
-  type: bopti-image
-  name: img_item_leaves
+    type: bopti-image
+    name: img_item_leaves
