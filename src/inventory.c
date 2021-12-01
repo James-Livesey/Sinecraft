@@ -138,7 +138,7 @@ void inventory_open(Inventory* inventory) {
                 break;
         }
 
-        while (selectedSlot > SLOTS_IN_INVENTORY) {
+        while (selectedSlot >= SLOTS_IN_INVENTORY) {
             selectedSlot -= SLOTS_IN_ROW;
         }
 
