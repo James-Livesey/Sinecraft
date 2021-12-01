@@ -160,6 +160,10 @@ void inventory_open(Inventory* inventory) {
                     break;
                 }
 
+                if (inventory->slots[selectedSlot].count == 0 || inventory->slots[selectedSlot].type == BLOCK_TYPE_AIR) {
+                    break; // Prevent movement of empty slots since this doesn't make sense
+                }
+
                 sourceSlot = selectedSlot;
                 break;
 
