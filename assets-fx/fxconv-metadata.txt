@@ -10,6 +10,14 @@ slot.png:
     type: bopti-image
     name: img_slot
 
+slotselected.png:
+    type: bopti-image
+    name: img_slotSelected
+
+slotsource.png:
+    type: bopti-image
+    name: img_slotSource
+
 stone.png:
     type: bopti-image
     name: img_item_stone
