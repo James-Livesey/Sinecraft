@@ -171,14 +171,6 @@ void inventory_open(Inventory* inventory) {
                 inventory_handleSelection(key, &selectedSlot);
                 break;
         }
-
-        while (selectedSlot >= SLOTS_IN_INVENTORY) {
-            selectedSlot -= SLOTS_IN_ROW;
-        }
-
-        while (selectedSlot < 0) {
-            selectedSlot += SLOTS_IN_ROW;
-        }
     }
 
     closeInventory:
