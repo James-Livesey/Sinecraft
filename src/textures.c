@@ -17,7 +17,7 @@ void textures_init() {
 
     textures[TEXTURE_GRASS] = textures[TEXTURE_DEFAULT];
 
-    textures[TEXTURE_GRASS].lines[0] = (TextureLine) {0, 3, 16, 3};
+    textures[TEXTURE_GRASS].lines[0] = (TextureLine) {0, 13, 16, 13};
     textures[TEXTURE_GRASS].linesToRender = 1;
 
     textures[TEXTURE_WOOD] = textures[TEXTURE_DEFAULT];
