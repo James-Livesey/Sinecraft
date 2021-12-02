@@ -15,6 +15,9 @@ typedef struct {
     double yAcceleration;
 } PhysicsSimulation;
 
+int physics_tick();
+unsigned int physics_getCurrentTime();
+
 void physics_init();
 PhysicsSimulation physics_default(Camera* camera, World* world);
 void physics_update(PhysicsSimulation* sim);

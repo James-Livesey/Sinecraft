@@ -14,6 +14,10 @@ int physics_tick() {
     return TIMER_CONTINUE;
 }
 
+unsigned int physics_getCurrentTime() {
+    return currentTime;
+}
+
 void physics_init() {
     lastTime = 0;
 

@@ -31,6 +31,7 @@ void world_addBlock(World* world, Block block);
 void world_setBlock(World* world, Block block);
 Block world_getBlock(World world, CartesianVector position);
 
+char* world_getBlockName(int blockType);
 int world_getBlockTexture(int blockType, int face);
 
 #endif
