@@ -6,6 +6,11 @@
 #define SLOT_WIDTH 12
 #define SLOT_HEIGHT 12
 
+enum {
+    SELECTION_HANDLING_NONE,
+    SELECTION_HANDLING_CHANGED
+};
+
 typedef struct {
     unsigned int type;
     unsigned int count;
@@ -20,10 +25,10 @@ Inventory inventory_default();
 
 void inventory_renderItem(int x, int y, unsigned int type);
 void inventory_renderRow(Inventory inventory, unsigned int offset, int y, int selected, int source);
-void inventory_renderHotbar(Inventory inventory);
-void inventory_renderSurvival(Inventory inventory, int selected, int source);
+void inventory_renderHotbar(Inventory inventory, bool showItemDetails);
+void inventory_renderSurvival(Inventory inventory, int selected, int source, bool showItemDetails);
 
-void inventory_handleSelection(int key, int* slot);
+int inventory_handleSelection(int key, int* slot);
 void inventory_open(Inventory* inventory);
 
 #endif

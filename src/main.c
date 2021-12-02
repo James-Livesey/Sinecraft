@@ -24,6 +24,7 @@ bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
 bool shouldOpenInventory = false;
+int lastItemSwitchTime = -300;
 
 #ifdef FLAG_PROFILING
 
@@ -99,26 +100,32 @@ int getKeypresses() {
 
     if (keydown(KEY_F1)) {
         inventory.selectedHotbarSlot = 0;
+        lastItemSwitchTime = (int)physics_getCurrentTime();
     }
 
     if (keydown(KEY_F2)) {
         inventory.selectedHotbarSlot = 1;
+        lastItemSwitchTime = (int)physics_getCurrentTime();
     }
 
     if (keydown(KEY_F3)) {
         inventory.selectedHotbarSlot = 2;
+        lastItemSwitchTime = (int)physics_getCurrentTime();
     }
 
     if (keydown(KEY_F4)) {
         inventory.selectedHotbarSlot = 3;
+        lastItemSwitchTime = (int)physics_getCurrentTime();
     }
 
     if (keydown(KEY_F5)) {
         inventory.selectedHotbarSlot = 4;
+        lastItemSwitchTime = (int)physics_getCurrentTime();
     }
 
     if (keydown(KEY_F6)) {
         inventory.selectedHotbarSlot = 5;
+        lastItemSwitchTime = (int)physics_getCurrentTime();
     }
 
     if (keydown(KEY_OPTN)) {
@@ -239,11 +246,11 @@ void main() {
         if (showLogo) {
             dimage((128 - img_logo.width) / 2, 10, &img_logo);
         } else {
-            inventory_renderHotbar(inventory);
+            inventory_renderHotbar(inventory, (int)physics_getCurrentTime() - lastItemSwitchTime < 300);
         }
 
         #ifdef FLAG_PROFILING
-        dprint(0, 0, C_BLACK, "%dFPS", 10000 / profiling_getTicks(PROFILING_RENDER_TIME));
+        dprint(0, 0, C_BLACK, "%dFPS", (int)1e4 / profiling_getTicks(PROFILING_RENDER_TIME));
         #endif
 
         dupdate();

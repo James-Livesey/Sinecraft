@@ -53,15 +53,41 @@ void inventory_renderRow(Inventory inventory, unsigned int offset, int y, int se
     }
 }
 
-void inventory_renderHotbar(Inventory inventory) {
+void inventory_renderHotbar(Inventory inventory, bool showItemDetails) {
     inventory_renderRow(inventory, 0, 63 - SLOT_HEIGHT, inventory.selectedHotbarSlot, -1);
+
+    if (showItemDetails) {
+        InventorySlot selectedSlot = inventory.slots[inventory.selectedHotbarSlot];
+
+        if (selectedSlot.count == 0 || selectedSlot.type == BLOCK_TYPE_AIR) {
+            return;
+        }
+
+        dprint_opt(
+            64, 64 - SLOT_HEIGHT - 12, C_INVERT, C_NONE, DTEXT_CENTER, DTEXT_TOP,
+            "%s (%d)",
+            items_getItemName(selectedSlot.type),
+            selectedSlot.count
+        );
+    }
 }
 
-void inventory_renderSurvival(Inventory inventory, int selected, int source) {
+void inventory_renderSurvival(Inventory inventory, int selected, int source, bool showItemDetails) {
     drect(22, 0, 104, 63, C_WHITE);
     dvline(22, C_BLACK);
     dvline(104, C_BLACK);
-    dtext(25, 1, C_BLACK, "Inventory");
+
+    InventorySlot selectedSlot = inventory.slots[source >= 0 ? source : selected];
+
+    if (selectedSlot.count == 0 || selectedSlot.type == BLOCK_TYPE_AIR) {
+        showItemDetails = false;
+    }
+
+    if (showItemDetails) {
+        dprint(25, 1, C_BLACK, "%s (%d)", items_getItemName(selectedSlot.type), selectedSlot.count);
+    } else {
+        dtext(25, 1, C_BLACK, "Inventory");
+    }
 
     const int ROW_OFFSET_HEIGHT = SLOT_HEIGHT + 1;
     const int ROW_Y_VALUES[] = {
@@ -76,7 +102,7 @@ void inventory_renderSurvival(Inventory inventory, int selected, int source) {
     }
 }
 
-void inventory_handleSelection(int key, int* slot) {
+int inventory_handleSelection(int key, int* slot) {
     switch (key) {
         case KEY_UP:
             if (*slot > SLOTS_IN_INVENTORY - SLOTS_IN_ROW - 1) {
@@ -130,15 +156,21 @@ void inventory_handleSelection(int key, int* slot) {
         case KEY_F6:
             *slot = key - KEY_F1;
             break;
+
+        default:
+            return SELECTION_HANDLING_NONE;
     }
+
+    return SELECTION_HANDLING_CHANGED;
 }
 
 void inventory_open(Inventory* inventory) {
     int selectedSlot = inventory->selectedHotbarSlot;
     int sourceSlot = -1;
+    bool selectionChanged = false;
 
     while (true) {
-        inventory_renderSurvival(*inventory, selectedSlot, sourceSlot);
+        inventory_renderSurvival(*inventory, selectedSlot, sourceSlot, selectionChanged);
 
         dupdate();
 
@@ -168,7 +200,8 @@ void inventory_open(Inventory* inventory) {
                 break;
 
             default:
-                inventory_handleSelection(key, &selectedSlot);
+                selectionChanged |= inventory_handleSelection(key, &selectedSlot) == SELECTION_HANDLING_CHANGED;
+
                 break;
         }
     }
