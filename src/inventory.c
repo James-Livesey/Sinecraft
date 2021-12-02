@@ -66,7 +66,7 @@ void inventory_renderHotbar(Inventory inventory, bool showItemDetails) {
         dprint_opt(
             64, 64 - SLOT_HEIGHT - 12, C_INVERT, C_NONE, DTEXT_CENTER, DTEXT_TOP,
             "%s (%d)",
-            world_getBlockName(selectedSlot.type),
+            items_getItemName(selectedSlot.type),
             selectedSlot.count
         );
     }
@@ -84,7 +84,7 @@ void inventory_renderSurvival(Inventory inventory, int selected, int source, boo
     }
 
     if (showItemDetails) {
-        dprint(25, 1, C_BLACK, "%s (%d)", world_getBlockName(selectedSlot.type), selectedSlot.count);
+        dprint(25, 1, C_BLACK, "%s (%d)", items_getItemName(selectedSlot.type), selectedSlot.count);
     } else {
         dtext(25, 1, C_BLACK, "Inventory");
     }

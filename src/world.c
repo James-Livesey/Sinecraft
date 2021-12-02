@@ -65,20 +65,6 @@ Block world_getBlock(World world, CartesianVector position) {
     };
 }
 
-char* world_getBlockName(int blockType) {
-    switch (blockType) {
-        case BLOCK_TYPE_AIR: return "Air";
-        case BLOCK_TYPE_STONE: return "Stone";
-        case BLOCK_TYPE_GRASS: return "Grass";
-        case BLOCK_TYPE_DIRT: return "Dirt";
-        case BLOCK_TYPE_COBBLESTONE: return "Cobblestone";
-        case BLOCK_TYPE_PLANK: return "Wood Plank";
-        case BLOCK_TYPE_WOOD: return "Wood";
-        case BLOCK_TYPE_LEAVES: return "Leaves";
-        default: return "Unknown Item";
-    }
-}
-
 int world_getBlockTexture(int blockType, int face) {
     for (unsigned int i = 0; i < sizeof(BLOCK_INFO) / sizeof(BLOCK_INFO[0]); i += 7) {
         if (BLOCK_INFO[i] == blockType) {

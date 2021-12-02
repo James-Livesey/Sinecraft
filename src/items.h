@@ -11,4 +11,6 @@ extern unsigned int items_thumbnailMappings[THUMBNAILS_COUNT];
 
 void items_init();
 
+char* items_getItemName(int blockType);
+
 #endif
