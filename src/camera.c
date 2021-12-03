@@ -430,6 +430,8 @@ void camera_render(Camera camera, World world) {
     profiling_start(PROFILING_RENDER_TIME);
     #endif
 
+    dhline((VIEWPORT_HEIGHT / 2) - (camera.heading.incl * ((float)VIEWPORT_HEIGHT / 60)), C_BLACK);
+
     DisplayBlockFaces faces = {.count = 0, .faces = malloc(0)};
 
     blockCurrentlySelected = false;
