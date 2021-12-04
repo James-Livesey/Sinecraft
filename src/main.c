@@ -187,13 +187,9 @@ void main() {
     // });
 
     inventory.slots[0].type = BLOCK_TYPE_STONE;
-    inventory.slots[0].count = 1;
+    inventory.slots[0].count = MAX_COUNT_IN_SLOT;
     inventory.slots[1].type = BLOCK_TYPE_GRASS;
-    inventory.slots[1].count = 1;
-    inventory.slots[2].type = BLOCK_TYPE_WOOD;
-    inventory.slots[2].count = 1;
-    inventory.slots[3].type = BLOCK_TYPE_LEAVES;
-    inventory.slots[3].count = 1;
+    inventory.slots[1].count = MAX_COUNT_IN_SLOT;
 
     #ifdef FLAG_PROFILING
     profiling_init();
@@ -209,16 +205,24 @@ void main() {
         physics_updateDelta();
 
         if (shouldDestroyNextBlock) {
-            camera_destroySelectedBlock(&world);
+            int type = camera_destroySelectedBlock(&world);
 
             shouldDestroyNextBlock = false;
+
+            if (inventory.gameMode == GAME_MODE_SURVIVAL) {
+                inventory_addFromBlockType(&inventory, type);
+            }
         } else if (shouldPlaceNextBlock) {
             InventorySlot slot = inventory.slots[inventory.selectedHotbarSlot];
 
             if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
-                camera_placeBlockOnFace(&world, camera, slot.type);
+                bool success = camera_placeBlockOnFace(&world, camera, slot.type);
 
                 shouldPlaceNextBlock = false;
+
+                if (inventory.gameMode == GAME_MODE_SURVIVAL && success) {
+                    inventory.slots[inventory.selectedHotbarSlot].count--;
+                }
             }
         } else if (shouldJump) {
             physics_jump(&sim);

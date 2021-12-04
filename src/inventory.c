@@ -13,6 +13,7 @@ extern bopti_image_t img_slotSource;
 
 Inventory inventory_default() {
     Inventory inventory = {
+        .gameMode = 0,
         .selectedHotbarSlot = 0
     };
 
@@ -26,7 +27,26 @@ Inventory inventory_default() {
     return inventory;
 }
 
-extern const bopti_image_t img_item_grass;
+void inventory_addFromBlockType(Inventory* inventory, unsigned int type) {
+    if (type == BLOCK_TYPE_AIR) {
+        return;
+    }
+
+    for (unsigned int i = 0; i < SLOTS_IN_INVENTORY; i++) {
+        if (inventory->slots[i].type == type && inventory->slots[i].count < MAX_COUNT_IN_SLOT) {
+            inventory->slots[i].count++;
+
+            return;
+        }
+
+        if (inventory->slots[i].count == 0 || inventory->slots[i].type == BLOCK_TYPE_AIR) {
+            inventory->slots[i].type = type;
+            inventory->slots[i].count = 1;
+
+            return;
+        }
+    }
+}
 
 void inventory_renderItem(int x, int y, unsigned int type) {
     for (unsigned int i = 0; i < THUMBNAILS_COUNT; i++) {

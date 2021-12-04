@@ -561,23 +561,26 @@ void camera_render(Camera camera, World world) {
     #endif
 }
 
-void camera_destroySelectedBlock(World* world) {
+int camera_destroySelectedBlock(World* world) {
     if (!blockCurrentlySelected || blockIsGround) {
-        return;
+        return BLOCK_TYPE_AIR;
     }
 
     blockCurrentlySelected = false;
 
     Block blockToDestroy = *lastSelectedFace.block;
+    int type = blockToDestroy.type;
 
     blockToDestroy.type = BLOCK_TYPE_AIR;
 
     world_setBlock(world, blockToDestroy);
+
+    return type;
 }
 
-void camera_placeBlockOnFace(World* world, Camera camera, unsigned int type) {
+bool camera_placeBlockOnFace(World* world, Camera camera, unsigned int type) {
     if (!blockCurrentlySelected) {
-        return;
+        return false;
     }
 
     blockCurrentlySelected = false;
@@ -585,7 +588,7 @@ void camera_placeBlockOnFace(World* world, Camera camera, unsigned int type) {
     CartesianVector position = getAdjacentBlockPosition(*lastSelectedFace.block, lastSelectedFace.face);
 
     if (position.x < 0 || position.y < 0 || position.z < 0) {
-        return;
+        return false;
     }
 
     if (
@@ -593,7 +596,7 @@ void camera_placeBlockOnFace(World* world, Camera camera, unsigned int type) {
         position.y > camera.position.y - 1.5 && position.y < camera.position.y + 0.5 &&
         position.z > camera.position.z - 0.5 && position.z < camera.position.z + 0.5
     ) {
-        return;
+        return false;
     }
 
     Block blockToPlace = (Block) {
@@ -602,4 +605,6 @@ void camera_placeBlockOnFace(World* world, Camera camera, unsigned int type) {
     };
 
     world_setBlock(world, blockToPlace);
+
+    return true;
 }
