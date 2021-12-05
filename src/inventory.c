@@ -56,20 +56,22 @@ void inventory_renderItem(int x, int y, unsigned int type) {
     }
 }
 
+void inventory_renderSlot(int x, int y, InventorySlot slot, bool selected, bool source) {
+    dimage(x - 1, y - 1, selected ? &img_slotSelected : (source ? &img_slotSource : &img_slot));
+
+    if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
+        inventory_renderItem(x + 2, y + 2, slot.type);
+    }
+}
+
 void inventory_renderRow(Inventory inventory, unsigned int offset, int y, int selected, int source) {
     unsigned int leftmostX = (128 - (SLOTS_IN_ROW * (SLOT_WIDTH + 1))) / 2;
 
     for (unsigned int i = 0; i < SLOTS_IN_ROW; i++) {
         int offsetI = (int)(i + offset);
         unsigned int x = leftmostX + ((SLOT_WIDTH + 1) * i);
-        bool isSelected = offsetI == selected;
-        bool isSource = offsetI == source;
 
-        dimage(x - 1, y - 1, isSelected ? &img_slotSelected : (isSource ? &img_slotSource : &img_slot));
-
-        if (inventory.slots[i + offset].count > 0 && inventory.slots[i + offset].type != BLOCK_TYPE_AIR) {
-            inventory_renderItem(x + 2, y + 2, inventory.slots[i + offset].type);
-        }
+        inventory_renderSlot(x, y, inventory.slots[i + offset], offsetI == selected, offsetI == source);
     }
 }
 

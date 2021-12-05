@@ -32,6 +32,7 @@ Inventory inventory_default();
 void inventory_addFromBlockType(Inventory* inventory, unsigned int type);
 
 void inventory_renderItem(int x, int y, unsigned int type);
+void inventory_renderSlot(int x, int y, InventorySlot slot, bool selected, bool source);
 void inventory_renderRow(Inventory inventory, unsigned int offset, int y, int selected, int source);
 void inventory_renderHotbar(Inventory inventory, bool showItemDetails);
 void inventory_renderSurvival(Inventory inventory, int selected, int source, bool showItemDetails);

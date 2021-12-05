@@ -11,6 +11,7 @@
 #include "items.h"
 #include "camera.h"
 #include "physics.h"
+#include "crafting.h"
 #include "inventory.h"
 #include "profiling.h"
 
@@ -141,6 +142,7 @@ void main() {
     textures_init();
     physics_init();
     items_init();
+    crafting_init();
 
     world = world_default();
     Camera camera;

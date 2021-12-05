@@ -27,6 +27,8 @@ set(SOURCES
     src/camera.c
     src/physics.h
     src/physics.c
+    src/crafting.h
+    src/crafting.c
     src/inventory.h
     src/inventory.c
     src/profiling.h
