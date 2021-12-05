@@ -46,6 +46,7 @@ set(ASSETS_fx
     assets-fx/slot.png
     assets-fx/slotselected.png
     assets-fx/slotsource.png
+    assets-fx/craftarrow.png
     assets-fx/stone.png
     assets-fx/grass.png
     assets-fx/dirt.png

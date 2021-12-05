@@ -11,6 +11,7 @@
 extern bopti_image_t img_slot;
 extern bopti_image_t img_slotSelected;
 extern bopti_image_t img_slotSource;
+extern bopti_image_t img_craftArrow;
 
 Inventory inventory_default() {
     Inventory inventory = {
@@ -245,11 +246,11 @@ void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool s
 
     dtext(25, 1, C_BLACK, "Crafting");
 
-    unsigned int leftmostX = 25;
-    unsigned int topmostY = 10;
+    unsigned int leftmostX = small ? 32 : 25;
+    unsigned int topmostY = small ? 16 : 10;
 
-    for (unsigned int py = 0; py < 3; py++) {
-        for (unsigned int px = 0; px < 3; px++) {
+    for (unsigned int py = 0; py < (small ? 2 : 3); py++) {
+        for (unsigned int px = 0; px < (small ? 2 : 3); px++) {
             unsigned int i = (py * 3) + px;
             unsigned int x = leftmostX + ((SLOT_WIDTH + 1) * px);
             unsigned int y = topmostY + ((SLOT_WIDTH + 1) * py);
@@ -257,6 +258,12 @@ void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool s
             inventory_renderSlot(x, y, (InventorySlot) {.type = recipe.inputTypes[i], .count = 1}, false, false);
         }
     }
+
+    dimage(small ? 63 : 69, 24, &img_craftArrow);
+
+    inventory_renderSlot(small ? 84 : 90, 23, (InventorySlot) {.type = recipe.outputType, .count = recipe.outputCount}, false, false);
+
+    dprint_opt(small ? 89 : 95, 37, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "%d", recipe.outputCount);
 
     inventory_renderHotbar(inventory, false);
 }

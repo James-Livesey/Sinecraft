@@ -245,7 +245,7 @@ void main() {
         } else if (shouldOpenCrafting) {
             skipKeypresses = true;
 
-            inventory_openCrafting(&inventory, false); // TODO: Detect if opening on crafting table
+            inventory_openCrafting(&inventory, true); // TODO: Detect if opening on crafting table
 
             skipKeypresses = false;
             shouldOpenCrafting = false;
