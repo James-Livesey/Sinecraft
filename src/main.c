@@ -25,6 +25,7 @@ bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
 bool shouldOpenInventory = false;
+bool shouldOpenCrafting = false;
 int lastItemSwitchTime = -300;
 
 #ifdef FLAG_PROFILING
@@ -133,6 +134,10 @@ int getKeypresses() {
         shouldOpenInventory = true;
     }
 
+    if (keydown(KEY_VARS)) {
+        shouldOpenCrafting = true;
+    }
+
     return TIMER_CONTINUE;
 }
 
@@ -237,6 +242,13 @@ void main() {
 
             skipKeypresses = false;
             shouldOpenInventory = false;
+        } else if (shouldOpenCrafting) {
+            skipKeypresses = true;
+
+            inventory_openCrafting(&inventory, false); // TODO: Detect if opening on crafting table
+
+            skipKeypresses = false;
+            shouldOpenCrafting = false;
         }
 
         dclear(C_WHITE);

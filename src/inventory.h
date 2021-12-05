@@ -1,6 +1,8 @@
 #ifndef INVENTORY_H_
 #define INVENTORY_H_
 
+#include "crafting.h"
+
 #define SLOTS_IN_ROW 6
 #define SLOTS_IN_INVENTORY 24
 #define MAX_COUNT_IN_SLOT 16
@@ -39,5 +41,8 @@ void inventory_renderSurvival(Inventory inventory, int selected, int source, boo
 
 int inventory_handleSelection(int key, int* slot);
 void inventory_open(Inventory* inventory);
+
+void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small);
+void inventory_openCrafting(Inventory* inventory, bool small);
 
 #endif

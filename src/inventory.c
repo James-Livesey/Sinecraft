@@ -5,6 +5,7 @@
 #include "inventory.h"
 #include "world.h"
 #include "items.h"
+#include "crafting.h"
 #include "physics.h"
 
 extern bopti_image_t img_slot;
@@ -233,6 +234,41 @@ void inventory_open(Inventory* inventory) {
     if (selectedSlot < SLOTS_IN_ROW) {
         inventory->selectedHotbarSlot = selectedSlot;
     }
+
+    physics_updateDelta();
+}
+
+void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small) {
+    drect(22, 0, 104, 63, C_WHITE);
+    dvline(22, C_BLACK);
+    dvline(104, C_BLACK);
+
+    dtext(25, 1, C_BLACK, "Crafting");
+
+    unsigned int leftmostX = 25;
+    unsigned int topmostY = 10;
+
+    for (unsigned int py = 0; py < 3; py++) {
+        for (unsigned int px = 0; px < 3; px++) {
+            unsigned int i = (py * 3) + px;
+            unsigned int x = leftmostX + ((SLOT_WIDTH + 1) * px);
+            unsigned int y = topmostY + ((SLOT_WIDTH + 1) * py);
+
+            inventory_renderSlot(x, y, (InventorySlot) {.type = recipe.inputTypes[i], .count = 1}, false, false);
+        }
+    }
+
+    inventory_renderHotbar(inventory, false);
+}
+
+void inventory_openCrafting(Inventory* inventory, bool small) {
+    // TODO: Implement actual crafting behaviour
+
+    inventory_renderCrafting(*inventory, crafting_recipes[0], small);
+
+    dupdate();
+
+    getkey();
 
     physics_updateDelta();
 }
