@@ -11,11 +11,12 @@
 extern bopti_image_t img_slot;
 extern bopti_image_t img_slotSelected;
 extern bopti_image_t img_slotSource;
+extern bopti_image_t img_slotCross;
 extern bopti_image_t img_craftArrow;
 
 Inventory inventory_default() {
     Inventory inventory = {
-        .gameMode = 0,
+        .gameMode = GAME_MODE_SURVIVAL,
         .selectedHotbarSlot = 0
     };
 
@@ -49,6 +50,49 @@ void inventory_addFromBlockType(Inventory* inventory, unsigned int type) {
         }
     }
 }
+
+bool inventory_removeFromBlockType(Inventory* inventory, unsigned int type) {
+    if (type == BLOCK_TYPE_AIR) {
+        return true;
+    }
+
+    for (unsigned int i = 0; i < SLOTS_IN_INVENTORY; i++) {
+        if (inventory->slots[i].type == type && inventory->slots[i].count > 0) {
+            inventory->slots[i].count--;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+InventoryCraftingStatus inventory_canCraft(Inventory inventory, CraftingRecipe recipe, bool small) {
+    InventoryCraftingStatus status = {
+        .hasAtLeastOneItem = false
+    };
+
+    for (unsigned int i = 0; i < 9; i++) {
+        status.itemsAvailable[i] = recipe.inputTypes[i] == BLOCK_TYPE_AIR;
+    }
+
+    for (unsigned int py = 0; py < (small ? 2 : 3); py++) {
+        for (unsigned int px = 0; px < (small ? 2 : 3); px++) {
+            unsigned int i = (py * 3) + px;
+
+            if (recipe.inputTypes[i] == BLOCK_TYPE_AIR) {
+                continue;
+            }
+
+            bool hasItem = inventory_removeFromBlockType(&inventory, recipe.inputTypes[i]);
+
+            status.itemsAvailable[i] = hasItem;
+            status.hasAtLeastOneItem |= hasItem;
+        }
+    }
+
+    return status;
+};
 
 void inventory_renderItem(int x, int y, unsigned int type) {
     for (unsigned int i = 0; i < THUMBNAILS_COUNT; i++) {
@@ -239,7 +283,7 @@ void inventory_open(Inventory* inventory) {
     physics_updateDelta();
 }
 
-void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small) {
+void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small, InventoryCraftingStatus status) {
     drect(22, 0, 104, 63, C_WHITE);
     dvline(22, C_BLACK);
     dvline(104, C_BLACK);
@@ -249,6 +293,8 @@ void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool s
     unsigned int leftmostX = small ? 32 : 25;
     unsigned int topmostY = small ? 16 : 10;
 
+    // TODO: Check if uncraftable in small mode
+
     for (unsigned int py = 0; py < (small ? 2 : 3); py++) {
         for (unsigned int px = 0; px < (small ? 2 : 3); px++) {
             unsigned int i = (py * 3) + px;
@@ -256,6 +302,10 @@ void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool s
             unsigned int y = topmostY + ((SLOT_WIDTH + 1) * py);
 
             inventory_renderSlot(x, y, (InventorySlot) {.type = recipe.inputTypes[i], .count = 1}, false, false);
+
+            if (!status.itemsAvailable[i]) {
+                dimage(x - 1, y - 1, &img_slotCross);
+            }
         }
     }
 
@@ -269,13 +319,20 @@ void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool s
 }
 
 void inventory_openCrafting(Inventory* inventory, bool small) {
-    // TODO: Implement actual crafting behaviour
+    while (true) {
+        InventoryCraftingStatus status = inventory_canCraft(*inventory, crafting_recipes[0], small);
 
-    inventory_renderCrafting(*inventory, crafting_recipes[0], small);
+        inventory_renderCrafting(*inventory, crafting_recipes[0], small, status);
 
-    dupdate();
+        dupdate();
 
-    getkey();
+        switch (getkey().key) {
+            case KEY_EXIT:
+                goto closeCrafting;
+        }
+    }
+
+    closeCrafting:
 
     physics_updateDelta();
 }

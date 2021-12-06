@@ -18,6 +18,10 @@ slotsource.png:
     type: bopti-image
     name: img_slotSource
 
+slotcross.png:
+    type: bopti-image
+    name: img_slotCross
+
 craftarrow.png:
     type: bopti-image
     name: img_craftArrow

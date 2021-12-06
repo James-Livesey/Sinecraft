@@ -29,9 +29,17 @@ typedef struct {
     unsigned int selectedHotbarSlot;
 } Inventory;
 
+typedef struct {
+    bool itemsAvailable[9];
+    bool hasAtLeastOneItem;
+} InventoryCraftingStatus;
+
 Inventory inventory_default();
 
 void inventory_addFromBlockType(Inventory* inventory, unsigned int type);
+bool inventory_removeFromBlockType(Inventory* inventory, unsigned int type);
+
+InventoryCraftingStatus inventory_canCraft(Inventory inventory, CraftingRecipe recipe, bool small);
 
 void inventory_renderItem(int x, int y, unsigned int type);
 void inventory_renderSlot(int x, int y, InventorySlot slot, bool selected, bool source);
@@ -42,7 +50,7 @@ void inventory_renderSurvival(Inventory inventory, int selected, int source, boo
 int inventory_handleSelection(int key, int* slot);
 void inventory_open(Inventory* inventory);
 
-void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small);
+void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small, InventoryCraftingStatus status);
 void inventory_openCrafting(Inventory* inventory, bool small);
 
 #endif
