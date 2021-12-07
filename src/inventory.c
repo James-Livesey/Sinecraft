@@ -69,6 +69,7 @@ bool inventory_removeFromBlockType(Inventory* inventory, unsigned int type) {
 
 InventoryCraftingStatus inventory_canCraft(Inventory inventory, CraftingRecipe recipe, bool small) {
     InventoryCraftingStatus status = {
+        .craftableInSize = true,
         .hasAtLeastOneItem = false
     };
 
@@ -76,11 +77,17 @@ InventoryCraftingStatus inventory_canCraft(Inventory inventory, CraftingRecipe r
         status.itemsAvailable[i] = recipe.inputTypes[i] == BLOCK_TYPE_AIR;
     }
 
-    for (unsigned int py = 0; py < (small ? 2 : 3); py++) {
-        for (unsigned int px = 0; px < (small ? 2 : 3); px++) {
+    for (unsigned int py = 0; py < 3; py++) {
+        for (unsigned int px = 0; px < 3; px++) {
             unsigned int i = (py * 3) + px;
 
             if (recipe.inputTypes[i] == BLOCK_TYPE_AIR) {
+                continue;
+            }
+
+            if (small && (px == 2 || py == 2)) {
+                status.craftableInSize = false;
+
                 continue;
             }
 
@@ -93,6 +100,16 @@ InventoryCraftingStatus inventory_canCraft(Inventory inventory, CraftingRecipe r
 
     return status;
 };
+
+void inventory_craft(Inventory* inventory, CraftingRecipe recipe) {
+    for (unsigned int i = 0; i < 9; i++) {
+        inventory_removeFromBlockType(inventory, recipe.inputTypes[i]);
+    }
+
+    for (unsigned int i = 0; i < recipe.outputCount; i++) {
+        inventory_addFromBlockType(inventory, recipe.outputType);
+    }
+}
 
 void inventory_renderItem(int x, int y, unsigned int type) {
     for (unsigned int i = 0; i < THUMBNAILS_COUNT; i++) {
@@ -293,8 +310,6 @@ void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool s
     unsigned int leftmostX = small ? 32 : 25;
     unsigned int topmostY = small ? 16 : 10;
 
-    // TODO: Check if uncraftable in small mode
-
     for (unsigned int py = 0; py < (small ? 2 : 3); py++) {
         for (unsigned int px = 0; px < (small ? 2 : 3); px++) {
             unsigned int i = (py * 3) + px;
@@ -318,17 +333,101 @@ void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool s
     inventory_renderHotbar(inventory, false);
 }
 
-void inventory_openCrafting(Inventory* inventory, bool small) {
-    while (true) {
-        InventoryCraftingStatus status = inventory_canCraft(*inventory, crafting_recipes[0], small);
+void inventory_renderCraftingNone(Inventory inventory) {
+    drect(22, 0, 104, 63, C_WHITE);
+    dvline(22, C_BLACK);
+    dvline(104, C_BLACK);
 
-        inventory_renderCrafting(*inventory, crafting_recipes[0], small, status);
+    dtext(25, 1, C_BLACK, "Crafting");
+    dtext_opt(64, 20, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "Nothing to", -1);
+    dtext_opt(64, 28, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "craft", -1);
+
+    inventory_renderHotbar(inventory, false);
+}
+
+int inventory_craftingFindFirstDisplayable(Inventory inventory, bool small) {
+    for (unsigned int i = 0; i < RECIPES_COUNT; i++) {
+        if (inventory_canCraft(inventory, crafting_recipes[i], small).hasAtLeastOneItem) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+void inventory_openCrafting(Inventory* inventory, bool small) {
+    bool canDisplayAny = true;
+    int selectedIndex = inventory_craftingFindFirstDisplayable(*inventory, small);
+
+    if (selectedIndex < 0) {
+        canDisplayAny = false;
+    }
+
+    while (true) {
+        if (canDisplayAny) {
+            InventoryCraftingStatus status = inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small);
+
+            inventory_renderCrafting(*inventory, crafting_recipes[selectedIndex], small, status);
+        } else {
+            inventory_renderCraftingNone(*inventory);
+        }
 
         dupdate();
 
         switch (getkey().key) {
             case KEY_EXIT:
                 goto closeCrafting;
+
+            case KEY_UP:
+                if (!canDisplayAny) {
+                    break;
+                }
+
+                selectedIndex--;
+
+                while (true) {
+                    if (selectedIndex >= RECIPES_COUNT) {
+                        selectedIndex = RECIPES_COUNT - 1;
+                    } else {
+                        selectedIndex--;
+                    }
+
+                    if (inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small).hasAtLeastOneItem) {
+                        break;
+                    }
+                }
+
+                break;
+
+            case KEY_DOWN:
+                if (!canDisplayAny) {
+                    break;
+                }
+
+                while (true) {
+                    if (selectedIndex >= RECIPES_COUNT) {
+                        selectedIndex = 0;
+                    } else {
+                        selectedIndex++;
+                    }
+
+                    if (inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small).hasAtLeastOneItem) {
+                        break;
+                    }
+                }
+
+                break;
+
+            case KEY_EXE:
+                if (!canDisplayAny) {
+                    break;
+                }
+
+                inventory_craft(inventory, crafting_recipes[selectedIndex]);
+
+                canDisplayAny = inventory_craftingFindFirstDisplayable(*inventory, small) >= 0;
+
+                break;
         }
     }
 

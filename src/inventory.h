@@ -31,6 +31,7 @@ typedef struct {
 
 typedef struct {
     bool itemsAvailable[9];
+    bool craftableInSize;
     bool hasAtLeastOneItem;
 } InventoryCraftingStatus;
 
@@ -40,6 +41,7 @@ void inventory_addFromBlockType(Inventory* inventory, unsigned int type);
 bool inventory_removeFromBlockType(Inventory* inventory, unsigned int type);
 
 InventoryCraftingStatus inventory_canCraft(Inventory inventory, CraftingRecipe recipe, bool small);
+void inventory_craft(Inventory* inventory, CraftingRecipe recipe);
 
 void inventory_renderItem(int x, int y, unsigned int type);
 void inventory_renderSlot(int x, int y, InventorySlot slot, bool selected, bool source);
@@ -51,6 +53,8 @@ int inventory_handleSelection(int key, int* slot);
 void inventory_open(Inventory* inventory);
 
 void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small, InventoryCraftingStatus status);
+void inventory_renderCraftingNone(Inventory inventory);
+int inventory_craftingFindFirstDisplayable(Inventory inventory, bool small);
 void inventory_openCrafting(Inventory* inventory, bool small);
 
 #endif
