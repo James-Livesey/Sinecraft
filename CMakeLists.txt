@@ -27,6 +27,8 @@ set(SOURCES
     src/camera.c
     src/physics.h
     src/physics.c
+    src/crafting.h
+    src/crafting.c
     src/inventory.h
     src/inventory.c
     src/profiling.h
@@ -44,6 +46,8 @@ set(ASSETS_fx
     assets-fx/slot.png
     assets-fx/slotselected.png
     assets-fx/slotsource.png
+    assets-fx/slotcross.png
+    assets-fx/craftarrow.png
     assets-fx/stone.png
     assets-fx/grass.png
     assets-fx/dirt.png

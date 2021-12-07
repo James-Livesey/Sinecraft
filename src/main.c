@@ -11,6 +11,7 @@
 #include "items.h"
 #include "camera.h"
 #include "physics.h"
+#include "crafting.h"
 #include "inventory.h"
 #include "profiling.h"
 
@@ -24,6 +25,7 @@ bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
 bool shouldOpenInventory = false;
+bool shouldOpenCrafting = false;
 int lastItemSwitchTime = -300;
 
 #ifdef FLAG_PROFILING
@@ -132,6 +134,10 @@ int getKeypresses() {
         shouldOpenInventory = true;
     }
 
+    if (keydown(KEY_VARS)) {
+        shouldOpenCrafting = true;
+    }
+
     return TIMER_CONTINUE;
 }
 
@@ -141,6 +147,7 @@ void main() {
     textures_init();
     physics_init();
     items_init();
+    crafting_init();
 
     world = world_default();
     Camera camera;
@@ -235,6 +242,13 @@ void main() {
 
             skipKeypresses = false;
             shouldOpenInventory = false;
+        } else if (shouldOpenCrafting) {
+            skipKeypresses = true;
+
+            inventory_openCrafting(&inventory, true); // TODO: Detect if opening on crafting table
+
+            skipKeypresses = false;
+            shouldOpenCrafting = false;
         }
 
         dclear(C_WHITE);

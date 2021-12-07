@@ -5,15 +5,18 @@
 #include "inventory.h"
 #include "world.h"
 #include "items.h"
+#include "crafting.h"
 #include "physics.h"
 
 extern bopti_image_t img_slot;
 extern bopti_image_t img_slotSelected;
 extern bopti_image_t img_slotSource;
+extern bopti_image_t img_slotCross;
+extern bopti_image_t img_craftArrow;
 
 Inventory inventory_default() {
     Inventory inventory = {
-        .gameMode = 0,
+        .gameMode = GAME_MODE_SURVIVAL,
         .selectedHotbarSlot = 0
     };
 
@@ -48,11 +51,79 @@ void inventory_addFromBlockType(Inventory* inventory, unsigned int type) {
     }
 }
 
+bool inventory_removeFromBlockType(Inventory* inventory, unsigned int type) {
+    if (type == BLOCK_TYPE_AIR) {
+        return true;
+    }
+
+    for (unsigned int i = 0; i < SLOTS_IN_INVENTORY; i++) {
+        if (inventory->slots[i].type == type && inventory->slots[i].count > 0) {
+            inventory->slots[i].count--;
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+InventoryCraftingStatus inventory_canCraft(Inventory inventory, CraftingRecipe recipe, bool small) {
+    InventoryCraftingStatus status = {
+        .craftableInSize = true,
+        .hasAtLeastOneItem = false
+    };
+
+    for (unsigned int i = 0; i < 9; i++) {
+        status.itemsAvailable[i] = recipe.inputTypes[i] == BLOCK_TYPE_AIR;
+    }
+
+    for (unsigned int py = 0; py < 3; py++) {
+        for (unsigned int px = 0; px < 3; px++) {
+            unsigned int i = (py * 3) + px;
+
+            if (recipe.inputTypes[i] == BLOCK_TYPE_AIR) {
+                continue;
+            }
+
+            if (small && (px == 2 || py == 2)) {
+                status.craftableInSize = false;
+
+                continue;
+            }
+
+            bool hasItem = inventory_removeFromBlockType(&inventory, recipe.inputTypes[i]);
+
+            status.itemsAvailable[i] = hasItem;
+            status.hasAtLeastOneItem |= hasItem;
+        }
+    }
+
+    return status;
+};
+
+void inventory_craft(Inventory* inventory, CraftingRecipe recipe) {
+    for (unsigned int i = 0; i < 9; i++) {
+        inventory_removeFromBlockType(inventory, recipe.inputTypes[i]);
+    }
+
+    for (unsigned int i = 0; i < recipe.outputCount; i++) {
+        inventory_addFromBlockType(inventory, recipe.outputType);
+    }
+}
+
 void inventory_renderItem(int x, int y, unsigned int type) {
     for (unsigned int i = 0; i < THUMBNAILS_COUNT; i++) {
         if (items_thumbnailMappings[i] == type) {
             dimage(x, y, items_thumbnails[i]);
         }
+    }
+}
+
+void inventory_renderSlot(int x, int y, InventorySlot slot, bool selected, bool source) {
+    dimage(x - 1, y - 1, selected ? &img_slotSelected : (source ? &img_slotSource : &img_slot));
+
+    if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
+        inventory_renderItem(x + 2, y + 2, slot.type);
     }
 }
 
@@ -62,14 +133,8 @@ void inventory_renderRow(Inventory inventory, unsigned int offset, int y, int se
     for (unsigned int i = 0; i < SLOTS_IN_ROW; i++) {
         int offsetI = (int)(i + offset);
         unsigned int x = leftmostX + ((SLOT_WIDTH + 1) * i);
-        bool isSelected = offsetI == selected;
-        bool isSource = offsetI == source;
 
-        dimage(x - 1, y - 1, isSelected ? &img_slotSelected : (isSource ? &img_slotSource : &img_slot));
-
-        if (inventory.slots[i + offset].count > 0 && inventory.slots[i + offset].type != BLOCK_TYPE_AIR) {
-            inventory_renderItem(x + 2, y + 2, inventory.slots[i + offset].type);
-        }
+        inventory_renderSlot(x, y, inventory.slots[i + offset], offsetI == selected, offsetI == source);
     }
 }
 
@@ -231,6 +296,142 @@ void inventory_open(Inventory* inventory) {
     if (selectedSlot < SLOTS_IN_ROW) {
         inventory->selectedHotbarSlot = selectedSlot;
     }
+
+    physics_updateDelta();
+}
+
+void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small, InventoryCraftingStatus status) {
+    drect(22, 0, 104, 63, C_WHITE);
+    dvline(22, C_BLACK);
+    dvline(104, C_BLACK);
+
+    dtext(25, 1, C_BLACK, "Crafting");
+
+    unsigned int leftmostX = small ? 32 : 25;
+    unsigned int topmostY = small ? 16 : 10;
+
+    for (unsigned int py = 0; py < (small ? 2 : 3); py++) {
+        for (unsigned int px = 0; px < (small ? 2 : 3); px++) {
+            unsigned int i = (py * 3) + px;
+            unsigned int x = leftmostX + ((SLOT_WIDTH + 1) * px);
+            unsigned int y = topmostY + ((SLOT_WIDTH + 1) * py);
+
+            inventory_renderSlot(x, y, (InventorySlot) {.type = recipe.inputTypes[i], .count = 1}, false, false);
+
+            if (!status.itemsAvailable[i]) {
+                dimage(x - 1, y - 1, &img_slotCross);
+            }
+        }
+    }
+
+    dimage(small ? 63 : 69, 24, &img_craftArrow);
+
+    inventory_renderSlot(small ? 84 : 90, 23, (InventorySlot) {.type = recipe.outputType, .count = recipe.outputCount}, false, false);
+
+    dprint_opt(small ? 89 : 95, 37, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "%d", recipe.outputCount);
+
+    inventory_renderHotbar(inventory, false);
+}
+
+void inventory_renderCraftingNone(Inventory inventory) {
+    drect(22, 0, 104, 63, C_WHITE);
+    dvline(22, C_BLACK);
+    dvline(104, C_BLACK);
+
+    dtext(25, 1, C_BLACK, "Crafting");
+    dtext_opt(64, 20, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "Nothing to", -1);
+    dtext_opt(64, 28, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "craft", -1);
+
+    inventory_renderHotbar(inventory, false);
+}
+
+int inventory_craftingFindFirstDisplayable(Inventory inventory, bool small) {
+    for (unsigned int i = 0; i < RECIPES_COUNT; i++) {
+        if (inventory_canCraft(inventory, crafting_recipes[i], small).hasAtLeastOneItem) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+void inventory_openCrafting(Inventory* inventory, bool small) {
+    bool canDisplayAny = true;
+    int selectedIndex = inventory_craftingFindFirstDisplayable(*inventory, small);
+
+    if (selectedIndex < 0) {
+        canDisplayAny = false;
+    }
+
+    while (true) {
+        if (canDisplayAny) {
+            InventoryCraftingStatus status = inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small);
+
+            inventory_renderCrafting(*inventory, crafting_recipes[selectedIndex], small, status);
+        } else {
+            inventory_renderCraftingNone(*inventory);
+        }
+
+        dupdate();
+
+        switch (getkey().key) {
+            case KEY_EXIT:
+                goto closeCrafting;
+
+            case KEY_UP:
+                if (!canDisplayAny) {
+                    break;
+                }
+
+                selectedIndex--;
+
+                while (true) {
+                    if (selectedIndex < 0) {
+                        selectedIndex = RECIPES_COUNT - 1;
+                    } else {
+                        selectedIndex--;
+                    }
+
+                    if (inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small).hasAtLeastOneItem) {
+                        break;
+                    }
+                }
+
+                break;
+
+            case KEY_DOWN:
+                if (!canDisplayAny) {
+                    break;
+                }
+
+                while (true) {
+                    if (selectedIndex >= RECIPES_COUNT) {
+                        selectedIndex = 0;
+                    } else {
+                        selectedIndex++;
+                    }
+
+                    if (inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small).hasAtLeastOneItem) {
+                        break;
+                    }
+                }
+
+                break;
+
+            case KEY_EXE:
+                if (!canDisplayAny) {
+                    break;
+                }
+
+                inventory_craft(inventory, crafting_recipes[selectedIndex]);
+
+                canDisplayAny = inventory_craftingFindFirstDisplayable(*inventory, small) >= 0;
+
+                break;
+        }
+    }
+
+    closeCrafting:
 
     physics_updateDelta();
 }
