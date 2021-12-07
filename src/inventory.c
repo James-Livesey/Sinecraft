@@ -386,7 +386,7 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
                 selectedIndex--;
 
                 while (true) {
-                    if (selectedIndex >= RECIPES_COUNT) {
+                    if (selectedIndex < 0) {
                         selectedIndex = RECIPES_COUNT - 1;
                     } else {
                         selectedIndex--;
