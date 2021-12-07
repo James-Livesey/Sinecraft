@@ -53,3 +53,7 @@ wood.png:
 leaves.png:
     type: bopti-image
     name: img_item_leaves
+
+craftingtable.png:
+    type: bopti-image
+    name: img_item_craftingTable

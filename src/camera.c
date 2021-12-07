@@ -561,6 +561,14 @@ void camera_render(Camera camera, World world) {
     #endif
 }
 
+Block camera_getSelectedBlock() {
+    if (!blockCurrentlySelected || blockIsGround) {
+        return (Block) {.position = coords_defaultCartesian(), .type = BLOCK_TYPE_AIR};
+    }
+
+    return *lastSelectedFace.block;
+}
+
 int camera_destroySelectedBlock(World* world) {
     if (!blockCurrentlySelected || blockIsGround) {
         return BLOCK_TYPE_AIR;
