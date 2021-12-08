@@ -55,6 +55,7 @@ set(ASSETS_fx
     assets-fx/plank.png
     assets-fx/wood.png
     assets-fx/leaves.png
+    assets-fx/craftingtable.png
     # ...
 )
 set(ASSETS_cg

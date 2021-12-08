@@ -11,6 +11,7 @@ extern bopti_image_t img_item_cobblestone;
 extern bopti_image_t img_item_plank;
 extern bopti_image_t img_item_wood;
 extern bopti_image_t img_item_leaves;
+extern bopti_image_t img_item_craftingTable;
 
 bopti_image_t* items_thumbnails[THUMBNAILS_COUNT];
 
@@ -21,7 +22,8 @@ unsigned int items_thumbnailMappings[THUMBNAILS_COUNT] = {
     BLOCK_TYPE_COBBLESTONE,
     BLOCK_TYPE_PLANK,
     BLOCK_TYPE_WOOD,
-    BLOCK_TYPE_LEAVES
+    BLOCK_TYPE_LEAVES,
+    BLOCK_TYPE_CRAFTING_TABLE
 };
 
 void items_init() {
@@ -32,6 +34,7 @@ void items_init() {
     items_thumbnails[4] = &img_item_plank;
     items_thumbnails[5] = &img_item_wood;
     items_thumbnails[6] = &img_item_leaves;
+    items_thumbnails[7] = &img_item_craftingTable;
 }
 
 char* items_getItemName(int blockType) {
@@ -44,6 +47,22 @@ char* items_getItemName(int blockType) {
         case BLOCK_TYPE_PLANK: return "Wood Plank";
         case BLOCK_TYPE_WOOD: return "Wood";
         case BLOCK_TYPE_LEAVES: return "Leaves";
+        case BLOCK_TYPE_CRAFTING_TABLE: return "Crafting Table";
         default: return "Unknown Item";
+    }
+}
+
+char* items_getItemNameShort(int blockType) {
+    switch (blockType) {
+        case BLOCK_TYPE_AIR: return "Air";
+        case BLOCK_TYPE_STONE: return "Stone";
+        case BLOCK_TYPE_GRASS: return "Grass";
+        case BLOCK_TYPE_DIRT: return "Dirt";
+        case BLOCK_TYPE_COBBLESTONE: return "Cblstn";
+        case BLOCK_TYPE_PLANK: return "Wood Plk";
+        case BLOCK_TYPE_WOOD: return "Wood";
+        case BLOCK_TYPE_LEAVES: return "Leaves";
+        case BLOCK_TYPE_CRAFTING_TABLE: return "Craf Tbl";
+        default: return "Unknown";
     }
 }

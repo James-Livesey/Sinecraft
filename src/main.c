@@ -245,7 +245,7 @@ void main() {
         } else if (shouldOpenCrafting) {
             skipKeypresses = true;
 
-            inventory_openCrafting(&inventory, true); // TODO: Detect if opening on crafting table
+            inventory_openCrafting(&inventory, camera_getSelectedBlock().type != BLOCK_TYPE_CRAFTING_TABLE);
 
             skipKeypresses = false;
             shouldOpenCrafting = false;

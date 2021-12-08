@@ -17,4 +17,11 @@ void crafting_init() {
     crafting_recipes[0] = crafting_recipeDefault(BLOCK_TYPE_PLANK, 4);
 
     crafting_recipes[0].inputTypes[4] = BLOCK_TYPE_WOOD;
+
+    crafting_recipes[1] = crafting_recipeDefault(BLOCK_TYPE_CRAFTING_TABLE, 1);
+
+    crafting_recipes[1].inputTypes[0] = BLOCK_TYPE_PLANK;
+    crafting_recipes[1].inputTypes[1] = BLOCK_TYPE_PLANK;
+    crafting_recipes[1].inputTypes[3] = BLOCK_TYPE_PLANK;
+    crafting_recipes[1].inputTypes[4] = BLOCK_TYPE_PLANK;
 }

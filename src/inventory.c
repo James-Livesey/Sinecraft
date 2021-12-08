@@ -1,3 +1,4 @@
+#include <string.h>
 #include <gint/display.h>
 #include <gint/display-fx.h>
 #include <gint/keyboard.h>
@@ -169,7 +170,7 @@ void inventory_renderSurvival(Inventory inventory, int selected, int source, boo
     }
 
     if (showItemDetails) {
-        dprint(25, 1, C_BLACK, "%s (%d)", items_getItemName(selectedSlot.type), selectedSlot.count);
+        dprint(25, 1, C_BLACK, "%s (%d)", items_getItemNameShort(selectedSlot.type), selectedSlot.count);
     } else {
         dtext(25, 1, C_BLACK, "Inventory");
     }
@@ -298,6 +299,7 @@ void inventory_open(Inventory* inventory) {
     }
 
     physics_updateDelta();
+    clearevents();
 }
 
 void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small, InventoryCraftingStatus status) {
@@ -364,8 +366,10 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
     }
 
     while (true) {
+        InventoryCraftingStatus status;
+
         if (canDisplayAny) {
-            InventoryCraftingStatus status = inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small);
+            status = inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small);
 
             inventory_renderCrafting(*inventory, crafting_recipes[selectedIndex], small, status);
         } else {
@@ -383,13 +387,11 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
                     break;
                 }
 
-                selectedIndex--;
-
                 while (true) {
+                    selectedIndex--;
+
                     if (selectedIndex < 0) {
                         selectedIndex = RECIPES_COUNT - 1;
-                    } else {
-                        selectedIndex--;
                     }
 
                     if (inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small).hasAtLeastOneItem) {
@@ -405,10 +407,10 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
                 }
 
                 while (true) {
+                    selectedIndex++;
+
                     if (selectedIndex >= RECIPES_COUNT) {
                         selectedIndex = 0;
-                    } else {
-                        selectedIndex++;
                     }
 
                     if (inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small).hasAtLeastOneItem) {
@@ -423,6 +425,18 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
                     break;
                 }
 
+                bool allowedToCraft = true;
+
+                for (unsigned int i = 0; i < 9; i++) {
+                    if (!status.itemsAvailable[i]) {
+                        allowedToCraft = false;
+                    }
+                }
+
+                if (!allowedToCraft) {
+                    break;
+                }
+
                 inventory_craft(inventory, crafting_recipes[selectedIndex]);
 
                 canDisplayAny = inventory_craftingFindFirstDisplayable(*inventory, small) >= 0;
@@ -434,4 +448,5 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
     closeCrafting:
 
     physics_updateDelta();
+    clearevents();
 }

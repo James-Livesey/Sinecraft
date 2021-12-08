@@ -52,6 +52,7 @@ CartesianVector camera_worldSpaceToCameraSpace(CartesianVector vector, Cartesian
 void camera_moveInAriz(Camera *camera, World world, double distance, double ariz);
 void camera_render(Camera camera, World world);
 
+Block camera_getSelectedBlock();
 int camera_destroySelectedBlock(World* world);
 bool camera_placeBlockOnFace(World* world, Camera camera, unsigned int type);
 
