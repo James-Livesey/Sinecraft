@@ -54,6 +54,7 @@ void inventory_open(Inventory* inventory);
 
 void inventory_renderCrafting(Inventory inventory, CraftingRecipe recipe, bool small, InventoryCraftingStatus status);
 void inventory_renderCraftingNone(Inventory inventory);
+bool inventory_craftingIsDisplayable(Inventory inventory, CraftingRecipe recipe, bool small);
 int inventory_craftingFindFirstDisplayable(Inventory inventory, bool small);
 void inventory_openCrafting(Inventory* inventory, bool small);
 

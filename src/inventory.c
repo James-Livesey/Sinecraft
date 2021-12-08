@@ -347,9 +347,15 @@ void inventory_renderCraftingNone(Inventory inventory) {
     inventory_renderHotbar(inventory, false);
 }
 
+bool inventory_craftingIsDisplayable(Inventory inventory, CraftingRecipe recipe, bool small) {
+    InventoryCraftingStatus status = inventory_canCraft(inventory, recipe, small);
+
+    return status.hasAtLeastOneItem && status.craftableInSize;
+}
+
 int inventory_craftingFindFirstDisplayable(Inventory inventory, bool small) {
     for (unsigned int i = 0; i < RECIPES_COUNT; i++) {
-        if (inventory_canCraft(inventory, crafting_recipes[i], small).hasAtLeastOneItem) {
+        if (inventory_craftingIsDisplayable(inventory, crafting_recipes[i], small)) {
             return i;
         }
     }
@@ -394,7 +400,7 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
                         selectedIndex = RECIPES_COUNT - 1;
                     }
 
-                    if (inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small).hasAtLeastOneItem) {
+                    if (inventory_craftingIsDisplayable(*inventory, crafting_recipes[selectedIndex], small)) {
                         break;
                     }
                 }
@@ -413,7 +419,7 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
                         selectedIndex = 0;
                     }
 
-                    if (inventory_canCraft(*inventory, crafting_recipes[selectedIndex], small).hasAtLeastOneItem) {
+                    if (inventory_craftingIsDisplayable(*inventory, crafting_recipes[selectedIndex], small)) {
                         break;
                     }
                 }
