@@ -3,7 +3,7 @@
 </div>
 <h2 align="center">A Minecraft clone that runs on Casio calculators!</h2>
 
-> **This project is work-in-progress:** The game is not complete (I've only done block placement/removal at the time of writing) and so it may be a while until something substantial is publicly available.
+> **This project is work-in-progress:** The game is not complete (I've started implementing crafting at the time of writing) and so it may be a while until something substantial is publicly available.
 
 You heard me right: I'm developing a 3D block-based sandbox game that runs on a variety of Casio graphing calculators so that you have something to do when you're bored in class*. It'll be a very similar recreation of the classic Minecraft and early Minecraft PE days, on a device that seems to handle 3D rendering quite well.
 
