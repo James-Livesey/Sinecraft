@@ -9,6 +9,7 @@
 #include "coords.h"
 #include "textures.h"
 #include "world.h"
+#include "items.h"
 #include "profiling.h"
 
 extern bopti_image_t img_crosshair;
@@ -588,6 +589,10 @@ int camera_destroySelectedBlock(World* world) {
 
 bool camera_placeBlockOnFace(World* world, Camera camera, unsigned int type) {
     if (!blockCurrentlySelected) {
+        return false;
+    }
+
+    if (!items_isPlaceable(type)) {
         return false;
     }
 

@@ -12,6 +12,8 @@ extern bopti_image_t img_item_plank;
 extern bopti_image_t img_item_wood;
 extern bopti_image_t img_item_leaves;
 extern bopti_image_t img_item_craftingTable;
+extern bopti_image_t img_item_woodenAxe;
+extern bopti_image_t img_item_stick;
 
 bopti_image_t* items_thumbnails[THUMBNAILS_COUNT];
 
@@ -23,7 +25,9 @@ unsigned int items_thumbnailMappings[THUMBNAILS_COUNT] = {
     BLOCK_TYPE_PLANK,
     BLOCK_TYPE_WOOD,
     BLOCK_TYPE_LEAVES,
-    BLOCK_TYPE_CRAFTING_TABLE
+    BLOCK_TYPE_CRAFTING_TABLE,
+    ITEM_TYPE_WOODEN_AXE,
+    ITEM_TYPE_STICK
 };
 
 void items_init() {
@@ -35,6 +39,12 @@ void items_init() {
     items_thumbnails[5] = &img_item_wood;
     items_thumbnails[6] = &img_item_leaves;
     items_thumbnails[7] = &img_item_craftingTable;
+    items_thumbnails[8] = &img_item_woodenAxe;
+    items_thumbnails[9] = &img_item_stick;
+}
+
+bool items_isPlaceable(int blockType) {
+    return blockType < 256;
 }
 
 char* items_getItemName(int blockType) {
@@ -48,6 +58,8 @@ char* items_getItemName(int blockType) {
         case BLOCK_TYPE_WOOD: return "Wood";
         case BLOCK_TYPE_LEAVES: return "Leaves";
         case BLOCK_TYPE_CRAFTING_TABLE: return "Crafting Table";
+        case ITEM_TYPE_WOODEN_AXE: return "Wooden Axe";
+        case ITEM_TYPE_STICK: return "Stick";
         default: return "Unknown Item";
     }
 }
@@ -63,6 +75,8 @@ char* items_getItemNameShort(int blockType) {
         case BLOCK_TYPE_WOOD: return "Wood";
         case BLOCK_TYPE_LEAVES: return "Leaves";
         case BLOCK_TYPE_CRAFTING_TABLE: return "Craf Tbl";
+        case ITEM_TYPE_WOODEN_AXE: return "Wood Axe";
+        case ITEM_TYPE_STICK: return "Stick";
         default: return "Unknown";
     }
 }

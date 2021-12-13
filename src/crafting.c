@@ -24,4 +24,17 @@ void crafting_init() {
     crafting_recipes[1].inputTypes[1] = BLOCK_TYPE_PLANK;
     crafting_recipes[1].inputTypes[3] = BLOCK_TYPE_PLANK;
     crafting_recipes[1].inputTypes[4] = BLOCK_TYPE_PLANK;
+
+    crafting_recipes[2] = crafting_recipeDefault(ITEM_TYPE_STICK, 4);
+
+    crafting_recipes[2].inputTypes[1] = BLOCK_TYPE_PLANK;
+    crafting_recipes[2].inputTypes[4] = BLOCK_TYPE_PLANK;
+
+    crafting_recipes[3] = crafting_recipeDefault(ITEM_TYPE_WOODEN_AXE, 16);
+
+    crafting_recipes[3].inputTypes[0] = BLOCK_TYPE_PLANK;
+    crafting_recipes[3].inputTypes[1] = BLOCK_TYPE_PLANK;
+    crafting_recipes[3].inputTypes[3] = BLOCK_TYPE_PLANK;
+    crafting_recipes[3].inputTypes[4] = ITEM_TYPE_STICK;
+    crafting_recipes[3].inputTypes[7] = ITEM_TYPE_STICK;
 }

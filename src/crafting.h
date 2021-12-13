@@ -1,7 +1,7 @@
 #ifndef CRAFTING_H_
 #define CRAFTING_H_
 
-#define RECIPES_COUNT 2
+#define RECIPES_COUNT 4
 
 typedef struct {
     unsigned int inputTypes[9];

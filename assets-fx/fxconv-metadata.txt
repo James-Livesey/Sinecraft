@@ -57,3 +57,11 @@ leaves.png:
 craftingtable.png:
     type: bopti-image
     name: img_item_craftingTable
+
+woodenaxe.png:
+    type: bopti-image
+    name: img_item_woodenAxe
+
+stick.png:
+    type: bopti-image
+    name: img_item_stick
