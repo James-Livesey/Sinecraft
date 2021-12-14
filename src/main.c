@@ -174,7 +174,7 @@ void main() {
         for (unsigned int z = 0; z < 3; z++) {
             world_addBlock(&world, (Block) {
                 .position = (CartesianVector) {x, 2, z},
-                .type = BLOCK_TYPE_LEAVES
+                .type = (x == 1 && z == 1) ? BLOCK_TYPE_WOOD : BLOCK_TYPE_LEAVES
             });
         }
     }
