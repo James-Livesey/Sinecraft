@@ -214,8 +214,6 @@ void main() {
         if (shouldDestroyNextBlock) {
             int type = camera_destroySelectedBlock(&world);
 
-            shouldDestroyNextBlock = false;
-
             if (inventory.gameMode == GAME_MODE_SURVIVAL) {
                 inventory_addFromBlockType(&inventory, type);
             }
@@ -225,31 +223,31 @@ void main() {
             if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
                 bool success = camera_placeBlockOnFace(&world, camera, slot.type);
 
-                shouldPlaceNextBlock = false;
-
                 if (inventory.gameMode == GAME_MODE_SURVIVAL && success) {
                     inventory.slots[inventory.selectedHotbarSlot].count--;
                 }
             }
         } else if (shouldJump) {
             physics_jump(&sim);
-
-            shouldJump = false;
         } else if (shouldOpenInventory) {
             skipKeypresses = true;
 
             inventory_open(&inventory);
 
             skipKeypresses = false;
-            shouldOpenInventory = false;
         } else if (shouldOpenCrafting) {
             skipKeypresses = true;
 
             inventory_openCrafting(&inventory, camera_getSelectedBlock().type != BLOCK_TYPE_CRAFTING_TABLE);
 
             skipKeypresses = false;
-            shouldOpenCrafting = false;
         }
+
+        shouldDestroyNextBlock = false;
+        shouldPlaceNextBlock = false;
+        shouldJump = false;
+        shouldOpenInventory = false;
+        shouldOpenCrafting = false;
 
         dclear(C_WHITE);
 
