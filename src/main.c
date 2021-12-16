@@ -6,6 +6,7 @@
 
 #include "flags.h"
 #include "common.h"
+#include "ui.h"
 #include "textures.h"
 #include "world.h"
 #include "items.h"
@@ -14,6 +15,9 @@
 #include "crafting.h"
 #include "inventory.h"
 #include "profiling.h"
+
+#define ITEM_SWITCH_SHOW_TIME 300
+#define BLOCK_PLACEMENT_COOLDOWN 20
 
 extern bopti_image_t img_logo;
 
@@ -26,7 +30,11 @@ bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
 bool shouldOpenInventory = false;
 bool shouldOpenCrafting = false;
-int lastItemSwitchTime = -300;
+int lastItemSwitchTime = -ITEM_SWITCH_SHOW_TIME;
+int lastDestructionStartTime = 0;
+double destructionProgress = -1;
+Block lastDestructionBlock = {.position = (CartesianVector) {0, 0, 0}, .type = BLOCK_TYPE_AIR};
+int lastPlaceTime = -BLOCK_PLACEMENT_COOLDOWN;
 
 #ifdef FLAG_PROFILING
 
@@ -90,6 +98,8 @@ int getKeypresses() {
 
     if (keydown(KEY_DEL)) {
         shouldDestroyNextBlock = true;
+    } else {
+        shouldDestroyNextBlock = false;
     }
 
     if (keydown(KEY_ACON)) {
@@ -203,20 +213,43 @@ void main() {
         physics_updateDelta();
 
         if (shouldDestroyNextBlock) {
-            int type = camera_destroySelectedBlock(&world);
+            Block selectedBlock = camera_getSelectedBlock();
 
-            if (inventory.gameMode == GAME_MODE_SURVIVAL) {
-                inventory_addFromBlockType(&inventory, type);
+            if (selectedBlock.type != BLOCK_TYPE_AIR && coords_equalCartesian(lastDestructionBlock.position, selectedBlock.position)) {
+                int destructionProgressTime = (physics_getCurrentTime() - lastDestructionStartTime) * 1e4;
+                int destructionTotalTime = items_getDestructionTime(lastDestructionBlock.type, inventory.slots[inventory.selectedHotbarSlot].type);
+
+                destructionProgress = (double)destructionProgressTime / destructionTotalTime;
+
+                if (inventory.gameMode == GAME_MODE_CREATIVE || destructionProgressTime > destructionTotalTime) {
+                    int type = camera_destroySelectedBlock(&world);
+
+                    if (inventory.gameMode == GAME_MODE_SURVIVAL) {
+                        if (items_isTool(inventory.slots[inventory.selectedHotbarSlot].type)) {
+                            inventory.slots[inventory.selectedHotbarSlot].count--;
+                        }
+
+                        inventory_addFromBlockType(&inventory, type);
+                    }
+                }
+            } else {
+                lastDestructionBlock = selectedBlock;
+                lastDestructionStartTime = physics_getCurrentTime();
+                destructionProgress = -1;
             }
         } else if (shouldPlaceNextBlock) {
-            InventorySlot slot = inventory.slots[inventory.selectedHotbarSlot];
+            if (physics_getCurrentTime() - lastPlaceTime > BLOCK_PLACEMENT_COOLDOWN) {
+                InventorySlot slot = inventory.slots[inventory.selectedHotbarSlot];
 
-            if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
-                bool success = camera_placeBlockOnFace(&world, camera, slot.type);
+                if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
+                    bool success = camera_placeBlockOnFace(&world, camera, slot.type);
 
-                if (inventory.gameMode == GAME_MODE_SURVIVAL && success) {
-                    inventory.slots[inventory.selectedHotbarSlot].count--;
+                    if (inventory.gameMode == GAME_MODE_SURVIVAL && success) {
+                        inventory.slots[inventory.selectedHotbarSlot].count--;
+                    }
                 }
+
+                lastPlaceTime = physics_getCurrentTime();
             }
         } else if (shouldJump) {
             physics_jump(&sim);
@@ -234,7 +267,11 @@ void main() {
             skipKeypresses = false;
         }
 
-        shouldDestroyNextBlock = false;
+        if (!shouldDestroyNextBlock) {
+            lastDestructionStartTime = physics_getCurrentTime();
+            destructionProgress = -1;
+        }
+
         shouldPlaceNextBlock = false;
         shouldJump = false;
         shouldOpenInventory = false;
@@ -253,7 +290,11 @@ void main() {
         if (showLogo) {
             dimage((128 - img_logo.width) / 2, 10, &img_logo);
         } else {
-            inventory_renderHotbar(inventory, (int)physics_getCurrentTime() - lastItemSwitchTime < 300);
+            inventory_renderHotbar(inventory, (int)physics_getCurrentTime() - lastItemSwitchTime < ITEM_SWITCH_SHOW_TIME);
+
+            if (inventory.gameMode == GAME_MODE_SURVIVAL && destructionProgress >= 0) {
+                ui_progressBar(127 - 24, 1, 127 - 1, 11, destructionProgress);
+            }
         }
 
         #ifdef FLAG_PROFILING

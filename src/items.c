@@ -1,6 +1,7 @@
 #include <gint/display.h>
 #include <gint/display-fx.h>
 
+#include "common.h"
 #include "items.h"
 #include "world.h"
 
@@ -45,6 +46,32 @@ void items_init() {
 
 bool items_isPlaceable(int blockType) {
     return blockType < 256;
+}
+
+bool items_isTool(int itemType) {
+    switch (itemType) {
+        case ITEM_TYPE_WOODEN_AXE: return true;
+        default: return false;
+    }
+}
+
+int items_getDestructionTime(int blockType, int toolItemType) {
+    switch (blockType) {
+        case BLOCK_TYPE_LEAVES: return 100 MSEC;
+
+        case BLOCK_TYPE_WOOD:
+        case BLOCK_TYPE_PLANK:
+            if (toolItemType == ITEM_TYPE_WOODEN_AXE) return 300 MSEC;
+
+            return 1 SEC;
+
+        case BLOCK_TYPE_CRAFTING_TABLE:
+            if (toolItemType == ITEM_TYPE_WOODEN_AXE) return 600 MSEC;
+
+            return 2 SEC;
+
+        default: return 500 MSEC;
+    }
 }
 
 char* items_getItemName(int blockType) {

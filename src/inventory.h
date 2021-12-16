@@ -15,7 +15,8 @@ enum {
 };
 
 enum {
-    GAME_MODE_SURVIVAL = 0
+    GAME_MODE_SURVIVAL = 0,
+    GAME_MODE_CREATIVE = 1
 };
 
 typedef struct {
