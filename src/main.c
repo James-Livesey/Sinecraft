@@ -16,6 +16,9 @@
 #include "inventory.h"
 #include "profiling.h"
 
+#define ITEM_SWITCH_SHOW_TIME 300
+#define BLOCK_PLACEMENT_COOLDOWN 20
+
 extern bopti_image_t img_logo;
 
 World world;
@@ -27,10 +30,11 @@ bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
 bool shouldOpenInventory = false;
 bool shouldOpenCrafting = false;
-int lastItemSwitchTime = -300;
+int lastItemSwitchTime = -ITEM_SWITCH_SHOW_TIME;
 int lastDestructionStartTime = 0;
 double destructionProgress = -1;
 Block lastDestructionBlock = {.position = (CartesianVector) {0, 0, 0}, .type = BLOCK_TYPE_AIR};
+int lastPlaceTime = -BLOCK_PLACEMENT_COOLDOWN;
 
 #ifdef FLAG_PROFILING
 
@@ -234,14 +238,18 @@ void main() {
                 destructionProgress = -1;
             }
         } else if (shouldPlaceNextBlock) {
-            InventorySlot slot = inventory.slots[inventory.selectedHotbarSlot];
+            if (physics_getCurrentTime() - lastPlaceTime > BLOCK_PLACEMENT_COOLDOWN) {
+                InventorySlot slot = inventory.slots[inventory.selectedHotbarSlot];
 
-            if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
-                bool success = camera_placeBlockOnFace(&world, camera, slot.type);
+                if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
+                    bool success = camera_placeBlockOnFace(&world, camera, slot.type);
 
-                if (inventory.gameMode == GAME_MODE_SURVIVAL && success) {
-                    inventory.slots[inventory.selectedHotbarSlot].count--;
+                    if (inventory.gameMode == GAME_MODE_SURVIVAL && success) {
+                        inventory.slots[inventory.selectedHotbarSlot].count--;
+                    }
                 }
+
+                lastPlaceTime = physics_getCurrentTime();
             }
         } else if (shouldJump) {
             physics_jump(&sim);
@@ -282,7 +290,7 @@ void main() {
         if (showLogo) {
             dimage((128 - img_logo.width) / 2, 10, &img_logo);
         } else {
-            inventory_renderHotbar(inventory, (int)physics_getCurrentTime() - lastItemSwitchTime < 300);
+            inventory_renderHotbar(inventory, (int)physics_getCurrentTime() - lastItemSwitchTime < ITEM_SWITCH_SHOW_TIME);
 
             if (inventory.gameMode == GAME_MODE_SURVIVAL && destructionProgress >= 0) {
                 ui_progressBar(127 - 24, 1, 127 - 1, 11, destructionProgress);
