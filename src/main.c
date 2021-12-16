@@ -27,6 +27,8 @@ bool shouldJump = false;
 bool shouldOpenInventory = false;
 bool shouldOpenCrafting = false;
 int lastItemSwitchTime = -300;
+int lastDestructionStartTime = 0;
+Block lastDestructionBlock = {.position = (CartesianVector) {0, 0, 0}, .type = BLOCK_TYPE_AIR};
 
 #ifdef FLAG_PROFILING
 
@@ -203,10 +205,26 @@ void main() {
         physics_updateDelta();
 
         if (shouldDestroyNextBlock) {
-            int type = camera_destroySelectedBlock(&world);
+            Block selectedBlock = camera_getSelectedBlock();
 
-            if (inventory.gameMode == GAME_MODE_SURVIVAL) {
-                inventory_addFromBlockType(&inventory, type);
+            if (selectedBlock.type != BLOCK_TYPE_AIR && coords_equalCartesian(lastDestructionBlock.position, selectedBlock.position)) {
+                if (
+                    inventory.gameMode == GAME_MODE_CREATIVE ||
+                    (physics_getCurrentTime() - lastDestructionStartTime) * 1e4 > items_getDestructionTime(lastDestructionBlock.type, inventory.slots[inventory.selectedHotbarSlot].type)
+                ) {
+                    int type = camera_destroySelectedBlock(&world);
+
+                    if (inventory.gameMode == GAME_MODE_SURVIVAL) {
+                        if (items_isTool(inventory.slots[inventory.selectedHotbarSlot].type)) {
+                            inventory.slots[inventory.selectedHotbarSlot].count--;
+                        }
+
+                        inventory_addFromBlockType(&inventory, type);
+                    }
+                }
+            } else {
+                lastDestructionBlock = selectedBlock;
+                lastDestructionStartTime = physics_getCurrentTime();
             }
         } else if (shouldPlaceNextBlock) {
             InventorySlot slot = inventory.slots[inventory.selectedHotbarSlot];

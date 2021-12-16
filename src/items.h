@@ -12,6 +12,9 @@ extern unsigned int items_thumbnailMappings[THUMBNAILS_COUNT];
 void items_init();
 
 bool items_isPlaceable(int blockType);
+bool items_isTool(int itemType);
+int items_getDestructionTime(int blockType, int toolItemType);
+
 char* items_getItemName(int blockType);
 char* items_getItemNameShort(int blockType);
 
