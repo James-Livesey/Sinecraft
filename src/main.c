@@ -184,15 +184,6 @@ void main() {
         .type = BLOCK_TYPE_LEAVES
     });
 
-    // candidateCamera.position.x = 1;
-    // candidateCamera.position.y = 2;
-    // candidateCamera.position.z = 1;
-
-    // world_addBlock(&world, (Block) {
-    //     .position = (CartesianVector) {1, 0, 1},
-    //     .type = BLOCK_TYPE_WOOD
-    // });
-
     inventory.slots[0].type = BLOCK_TYPE_STONE;
     inventory.slots[0].count = MAX_COUNT_IN_SLOT;
     inventory.slots[1].type = BLOCK_TYPE_GRASS;
