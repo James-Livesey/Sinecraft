@@ -17,6 +17,8 @@ set(SOURCES
     src/common.c
     src/coords.h
     src/coords.c
+    src/ui.h
+    src/ui.c
     src/textures.h
     src/textures.c
     src/world.h
