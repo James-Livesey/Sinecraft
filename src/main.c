@@ -151,13 +151,8 @@ int getKeypresses() {
     return TIMER_CONTINUE;
 }
 
-void main() {
+void startGame() {
     bool showLogo = true;
-
-    textures_init();
-    physics_init();
-    items_init();
-    crafting_init();
 
     world = world_default();
     Camera camera;
@@ -198,10 +193,6 @@ void main() {
     inventory.slots[0].count = MAX_COUNT_IN_SLOT;
     inventory.slots[1].type = BLOCK_TYPE_GRASS;
     inventory.slots[1].count = MAX_COUNT_IN_SLOT;
-
-    #ifdef FLAG_PROFILING
-    profiling_init();
-    #endif
 
     int timer = timer_configure(TIMER_ETMU, 1e5, GINT_CALL(getKeypresses));
 
@@ -319,4 +310,17 @@ void main() {
         }
         #endif
     }
+}
+
+void main() {
+    textures_init();
+    physics_init();
+    items_init();
+    crafting_init();
+
+    #ifdef FLAG_PROFILING
+    profiling_init();
+    #endif
+
+    startGame();
 }
