@@ -152,8 +152,6 @@ int getKeypresses() {
 }
 
 void startGame() {
-    bool showLogo = true;
-
     world = world_default();
     Camera camera;
     PhysicsSimulation sim = physics_default(&candidateCamera, &world);
@@ -278,14 +276,10 @@ void startGame() {
 
         physics_update(&sim);
 
-        if (showLogo) {
-            dimage((128 - img_logo.width) / 2, 10, &img_logo);
-        } else {
-            inventory_renderHotbar(inventory, (int)physics_getCurrentTime() - lastItemSwitchTime < ITEM_SWITCH_SHOW_TIME);
+        inventory_renderHotbar(inventory, (int)physics_getCurrentTime() - lastItemSwitchTime < ITEM_SWITCH_SHOW_TIME);
 
-            if (inventory.gameMode == GAME_MODE_SURVIVAL && destructionProgress >= 0) {
-                ui_progressBar(127 - 24, 1, 127 - 1, 11, destructionProgress);
-            }
+        if (inventory.gameMode == GAME_MODE_SURVIVAL && destructionProgress >= 0) {
+            ui_progressBar(127 - 24, 1, 127 - 1, 11, destructionProgress);
         }
 
         #ifdef FLAG_PROFILING
@@ -301,7 +295,7 @@ void startGame() {
         }
 
         if (keydown(KEY_EXIT)) {
-            showLogo = false;
+            return;
         }
 
         #ifdef FLAG_PROFILING
@@ -322,5 +316,34 @@ void main() {
     profiling_init();
     #endif
 
-    startGame();
+    unsigned int focus = 0;
+
+    while (true) {
+        dclear(C_WHITE);
+        dimage((128 - img_logo.width) / 2, 2, &img_logo);
+        dprint_opt(0, 63, focus == 2 ? C_WHITE : C_BLACK, focus == 2 ? C_BLACK : C_NONE, DTEXT_LEFT, DTEXT_BOTTOM, "V%s", VERSION);
+
+        #ifdef FLAG_PROFILING
+        dtext_opt(127, 63, C_BLACK, C_NONE, DTEXT_RIGHT, DTEXT_BOTTOM, "DEBUG BUILD", -1);
+        #endif
+
+        ui_button(64 - 32, 22, 64 + 32, 22 + 12, "Play", focus == 0);
+        ui_button(64 - 32, 36, 64 + 32, 36 + 12, "Options...", focus == 1);
+
+        dupdate();
+
+        switch (ui_waitForInput(&focus, 3)) {
+            case INPUT_CHOICE_CONFIRM:
+                if (focus == 0) {
+                    startGame();
+                }
+
+                break;
+
+            case INPUT_CHOICE_MENU:
+                gint_osmenu();
+
+                break;
+        }
+    }
 }
