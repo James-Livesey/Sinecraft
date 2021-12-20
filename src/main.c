@@ -81,19 +81,19 @@ int getKeypresses() {
     }
 
     if (keydown(KEY_UP)) {
-        candidateCamera.heading.incl -= 5;
+        candidateCamera.heading.incl -= 3;
     }
 
     if (keydown(KEY_DOWN)) {
-        candidateCamera.heading.incl += 5;
+        candidateCamera.heading.incl += 3;
     }
 
     if (keydown(KEY_LEFT)) {
-        candidateCamera.heading.ariz -= 5;
+        candidateCamera.heading.ariz -= 3;
     }
 
     if (keydown(KEY_RIGHT)) {
-        candidateCamera.heading.ariz += 5;
+        candidateCamera.heading.ariz += 3;
     }
 
     if (keydown(KEY_DEL)) {
