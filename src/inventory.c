@@ -264,6 +264,10 @@ void inventory_open(Inventory* inventory) {
 
         switch (key) {
             case KEY_EXIT:
+                while (keydown(KEY_EXIT)) {
+                    clearevents();
+                }
+
                 goto closeInventory;
 
             case KEY_EXE:
@@ -386,6 +390,10 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
 
         switch (getkey().key) {
             case KEY_EXIT:
+                while (keydown(KEY_EXIT)) {
+                    clearevents();
+                }
+
                 goto closeCrafting;
 
             case KEY_UP:
