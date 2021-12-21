@@ -7,6 +7,7 @@
 #include "flags.h"
 #include "common.h"
 #include "ui.h"
+#include "config.h"
 #include "textures.h"
 #include "world.h"
 #include "items.h"
@@ -21,6 +22,7 @@
 
 extern bopti_image_t img_logo;
 
+Config config;
 World world;
 Camera candidateCamera;
 Inventory inventory;
@@ -149,6 +151,58 @@ int getKeypresses() {
     }
 
     return TIMER_CONTINUE;
+}
+
+bool pauseMenu(bool renderOnly) {
+    unsigned int i = 0;
+
+    // Dither the screen and make it darker with a checkerboard pattern
+    for (unsigned int y = 0; y < 64; y++) {
+        for (unsigned int x = 0; x < 128; x++) {
+            if (i % 2 == 0) {
+                dpixel(x, y, C_BLACK);
+            }
+
+            i++;
+        }
+
+        i++;
+    }
+
+    unsigned int focus = 0;
+
+    while (true) {
+        ui_button(64 - 48, 12, 64 + 48, 12 + 12, "Resume Game", focus == 0);
+        ui_button(64 - 48, 26, 64 + 48, 26 + 12, "Options...", focus == 1);
+        ui_button(64 - 48, 40, 64 + 48, 40 + 12, "Save & Quit", focus == 2);
+
+        dupdate();
+
+        if (renderOnly) {
+            return false;
+        }
+
+        switch (ui_waitForInput(&focus, 3)) {
+            case INPUT_CHOICE_CONFIRM:
+                if (focus == 0) {
+                    return false;
+                }
+
+                if (focus == 2) {
+                    return true;
+                }
+
+                break;
+
+            case INPUT_CHOICE_EXIT:
+                return false;
+
+            case INPUT_CHOICE_MENU:
+                gint_osmenu();
+
+                break;
+        }
+    }
 }
 
 void startGame() {
@@ -290,12 +344,20 @@ void startGame() {
 
         clearevents();
 
-        if (keydown(KEY_MENU)) {
-            gint_osmenu();
-        }
+        if (keydown(KEY_MENU) || keydown(KEY_EXIT)) {
+            skipKeypresses = true;
 
-        if (keydown(KEY_EXIT)) {
-            return;
+            if (keydown(KEY_MENU)) {
+                pauseMenu(true);
+
+                gint_osmenu();
+            }
+
+            if (pauseMenu(false)) {
+                return;
+            }
+
+            skipKeypresses = false;
         }
 
         #ifdef FLAG_PROFILING
@@ -315,6 +377,8 @@ void main() {
     #ifdef FLAG_PROFILING
     profiling_init();
     #endif
+
+    config = config_default();
 
     unsigned int focus = 0;
 
