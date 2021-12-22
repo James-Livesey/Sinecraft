@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <gint/gint.h>
 #include <gint/display.h>
 #include <gint/display-fx.h>
@@ -153,6 +154,45 @@ int getKeypresses() {
     return TIMER_CONTINUE;
 }
 
+void optionsMenu() {
+    unsigned int focus = 0;
+
+    while (true) {
+        dclear(C_WHITE);
+
+        dtext(2, 1, C_BLACK, "Options");
+        dhline(10, C_BLACK);
+
+        char fovText[16];
+
+        sprintf(fovText, "FOV: %d", config.fov);
+
+        ui_progressBar(64 - 48, 16, 64 + 48, 16 + 12, (double)(config.fov - 30) / 60);
+        ui_progressLabel(64 - 48, 16, 64 + 48, 16 + 12, fovText, focus == 0);
+
+        dupdate();
+
+        switch (ui_waitForInput(&focus, 1)) {
+            case INPUT_CHOICE_CONFIRM:
+                // TODO: Implement control manipulation
+
+                break;
+
+            case INPUT_CHOICE_EXIT:
+                while (keydown(KEY_EXIT)) {
+                    clearevents();
+                }
+
+                return;
+
+            case INPUT_CHOICE_MENU:
+                gint_osmenu();
+
+                break;
+        }
+    }
+}
+
 bool pauseMenu(bool renderOnly) {
     unsigned int i = 0;
 
@@ -188,6 +228,14 @@ bool pauseMenu(bool renderOnly) {
                     return false;
                 }
 
+                if (focus == 1) {
+                    optionsMenu();
+
+                    dclear(C_WHITE);
+
+                    break;
+                }
+
                 if (focus == 2) {
                     return true;
                 }
@@ -195,6 +243,10 @@ bool pauseMenu(bool renderOnly) {
                 break;
 
             case INPUT_CHOICE_EXIT:
+                while (keydown(KEY_EXIT)) {
+                    clearevents();
+                }
+
                 return false;
 
             case INPUT_CHOICE_MENU:
@@ -400,6 +452,14 @@ void main() {
             case INPUT_CHOICE_CONFIRM:
                 if (focus == 0) {
                     startGame();
+
+                    break;
+                }
+
+                if (focus == 1) {
+                    optionsMenu();
+
+                    break;
                 }
 
                 break;

@@ -30,6 +30,14 @@ void ui_progressBar(int x1, int y1, int x2, int y2, double value) {
     drect(x1 + 2, y1 + 2, LERP(x1 + 2, x2 - 2, value), y2 - 2, C_BLACK);
 }
 
+void ui_progressLabel(int x1, int y1, int x2, int y2, char* text, bool selected) {
+    if (selected) {
+        drect(x1 + 1, y1 + 1, x2 - 1, y2 - 1, C_INVERT);
+    }
+
+    dtext_opt((x1 + x2) / 2, (y1 + y2) / 2, C_INVERT, C_NONE, DTEXT_CENTER, DTEXT_CENTER, text, -1);
+}
+
 int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
     key_event_t keyEvent = getkey();
 

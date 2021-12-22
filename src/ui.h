@@ -10,6 +10,7 @@ enum {
 
 void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected);
 void ui_progressBar(int x1, int y1, int x2, int y2, double value);
+void ui_progressLabel(int x1, int y1, int x2, int y2, char* text, bool selected);
 
 int ui_waitForInput(unsigned int* focus, unsigned int controlCount);
 
