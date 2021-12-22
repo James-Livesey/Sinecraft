@@ -42,7 +42,9 @@ void inventory_addFromBlockType(Inventory* inventory, unsigned int type) {
 
             return;
         }
+    }
 
+    for (unsigned int i = 0; i < SLOTS_IN_INVENTORY; i++) {
         if (inventory->slots[i].count == 0 || inventory->slots[i].type == BLOCK_TYPE_AIR) {
             inventory->slots[i].type = type;
             inventory->slots[i].count = 1;
