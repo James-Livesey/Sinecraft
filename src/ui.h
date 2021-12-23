@@ -5,7 +5,9 @@ enum {
     INPUT_CHOICE_NONE,
     INPUT_CHOICE_CONFIRM,
     INPUT_CHOICE_EXIT,
-    INPUT_CHOICE_MENU
+    INPUT_CHOICE_MENU,
+    INPUT_CHOICE_PREVIOUS,
+    INPUT_CHOICE_NEXT
 };
 
 void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected);

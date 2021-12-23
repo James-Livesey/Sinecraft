@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 #include <gint/gint.h>
 #include <gint/display.h>
 #include <gint/display-fx.h>
@@ -165,7 +166,19 @@ void optionsMenu() {
 
         char fovText[16];
 
-        sprintf(fovText, "FOV: %d", config.fov);
+        switch (config.fov) {
+            case 60:
+                strcpy(fovText, "FOV: Normal");
+                break;
+
+            case 90:
+                strcpy(fovText, "FOV: Quake Pro");
+                break;
+
+            default:
+                sprintf(fovText, "FOV: %d", config.fov);
+                break;
+        }
 
         ui_progressBar(64 - 48, 16, 64 + 48, 16 + 12, (double)(config.fov - 30) / 60);
         ui_progressLabel(64 - 48, 16, 64 + 48, 16 + 12, fovText, focus == 0);
@@ -187,6 +200,20 @@ void optionsMenu() {
 
             case INPUT_CHOICE_MENU:
                 gint_osmenu();
+
+                break;
+
+            case INPUT_CHOICE_PREVIOUS:
+                if (focus == 0 && config.fov > 30) {
+                    config.fov--;
+                }
+
+                break;
+
+            case INPUT_CHOICE_NEXT:
+                if (focus == 0 && config.fov < 90) {
+                    config.fov++;
+                }
 
                 break;
         }
@@ -232,8 +259,6 @@ bool pauseMenu(bool renderOnly) {
                     optionsMenu();
 
                     dclear(C_WHITE);
-
-                    break;
                 }
 
                 if (focus == 2) {
@@ -303,6 +328,8 @@ void startGame() {
     timer_start(timer);
 
     while (true) {
+        candidateCamera.fov = config.fov;
+
         camera = candidateCamera;
 
         physics_updateDelta();
@@ -452,14 +479,10 @@ void main() {
             case INPUT_CHOICE_CONFIRM:
                 if (focus == 0) {
                     startGame();
-
-                    break;
                 }
 
                 if (focus == 1) {
                     optionsMenu();
-
-                    break;
                 }
 
                 break;

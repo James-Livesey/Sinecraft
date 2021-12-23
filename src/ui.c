@@ -43,7 +43,6 @@ int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
 
     switch (keyEvent.key) {
         case KEY_UP:
-        case KEY_LEFT:
             if (*focus == 0) {
                 *focus = controlCount - 1;
 
@@ -55,7 +54,6 @@ int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
             break;
 
         case KEY_DOWN:
-        case KEY_RIGHT:
             (*focus)++;
 
             if (*focus >= controlCount) {
@@ -63,6 +61,12 @@ int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
             }
 
             break;
+
+        case KEY_LEFT:
+            return INPUT_CHOICE_PREVIOUS;
+
+        case KEY_RIGHT:
+            return INPUT_CHOICE_NEXT;
 
         case KEY_EXE:
             return INPUT_CHOICE_CONFIRM;
