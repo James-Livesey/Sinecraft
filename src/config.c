@@ -5,6 +5,7 @@ Config config_default() {
     return (Config) {
         .vernum = VERNUM,
         .username = "Steve",
-        .fov = 60
+        .fov = 60,
+        .camSpeed = 100
     };
 }

@@ -64,6 +64,8 @@ void showProfile() {
 #endif
 
 int getKeypresses() {
+    int actualCamSpeed = 1 + (2 * ((double)config.camSpeed / 100));
+
     if (skipKeypresses) {
         return TIMER_CONTINUE;
     }
@@ -85,19 +87,19 @@ int getKeypresses() {
     }
 
     if (keydown(KEY_UP)) {
-        candidateCamera.heading.incl -= 3;
+        candidateCamera.heading.incl -= actualCamSpeed;
     }
 
     if (keydown(KEY_DOWN)) {
-        candidateCamera.heading.incl += 3;
+        candidateCamera.heading.incl += actualCamSpeed;
     }
 
     if (keydown(KEY_LEFT)) {
-        candidateCamera.heading.ariz -= 3;
+        candidateCamera.heading.ariz -= actualCamSpeed;
     }
 
     if (keydown(KEY_RIGHT)) {
-        candidateCamera.heading.ariz += 3;
+        candidateCamera.heading.ariz += actualCamSpeed;
     }
 
     if (keydown(KEY_DEL)) {
@@ -183,9 +185,28 @@ void optionsMenu() {
         ui_progressBar(64 - 48, 16, 64 + 48, 16 + 12, (double)(config.fov - 30) / 60);
         ui_progressLabel(64 - 48, 16, 64 + 48, 16 + 12, fovText, focus == 0);
 
+        char camSpeedText[16];
+
+        switch (config.camSpeed) {
+            case 0:
+                strcpy(camSpeedText, "Looking: *yawn*");
+                break;
+
+            case 200:
+                strcpy(camSpeedText, "Looking: HYPER!");
+                break;
+
+            default:
+                sprintf(camSpeedText, "Looking: %d%%", config.camSpeed);
+                break;
+        }
+
+        ui_progressBar(64 - 48, 30, 64 + 48, 30 + 12, (double)config.camSpeed / 200);
+        ui_progressLabel(64 - 48, 30, 64 + 48, 30 + 12, camSpeedText, focus == 1);
+
         dupdate();
 
-        switch (ui_waitForInput(&focus, 1)) {
+        switch (ui_waitForInput(&focus, 2)) {
             case INPUT_CHOICE_CONFIRM:
                 // TODO: Implement control manipulation
 
@@ -208,11 +229,19 @@ void optionsMenu() {
                     config.fov--;
                 }
 
+                if (focus == 1 && config.camSpeed > 0) {
+                    config.camSpeed--;
+                }
+
                 break;
 
             case INPUT_CHOICE_NEXT:
                 if (focus == 0 && config.fov < 90) {
                     config.fov++;
+                }
+
+                if (focus == 1 && config.camSpeed < 200) {
+                    config.camSpeed++;
                 }
 
                 break;

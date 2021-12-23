@@ -5,6 +5,7 @@ typedef struct {
     unsigned int vernum;
     char username[8];
     int fov;
+    int camSpeed;
 } Config;
 
 Config config_default();
