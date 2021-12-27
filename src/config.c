@@ -6,6 +6,7 @@ Config config_default() {
         .vernum = VERNUM,
         .username = "Steve",
         .fov = 60,
-        .camSpeed = 100
+        .camSpeed = 100,
+        .invertY = false
     };
 }

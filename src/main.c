@@ -87,11 +87,11 @@ int getKeypresses() {
     }
 
     if (keydown(KEY_UP)) {
-        candidateCamera.heading.incl -= actualCamSpeed;
+        candidateCamera.heading.incl -= actualCamSpeed * (config.invertY ? -1 : 1);
     }
 
     if (keydown(KEY_DOWN)) {
-        candidateCamera.heading.incl += actualCamSpeed;
+        candidateCamera.heading.incl += actualCamSpeed * (config.invertY ? -1 : 1);
     }
 
     if (keydown(KEY_LEFT)) {
@@ -204,11 +204,15 @@ void optionsMenu() {
         ui_progressBar(64 - 48, 30, 64 + 48, 30 + 12, (double)config.camSpeed / 200);
         ui_progressLabel(64 - 48, 30, 64 + 48, 30 + 12, camSpeedText, focus == 1);
 
+        ui_button(64 - 48, 44, 64 + 48, 44 + 12, config.invertY ? "Y Axis: Invert" : "Y Axis: Normal", focus == 2);
+
         dupdate();
 
-        switch (ui_waitForInput(&focus, 2)) {
+        switch (ui_waitForInput(&focus, 3)) {
             case INPUT_CHOICE_CONFIRM:
-                // TODO: Implement control manipulation
+                if (focus == 2) {
+                    config.invertY = !config.invertY;
+                }
 
                 break;
 
