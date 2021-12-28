@@ -47,6 +47,12 @@ set(ASSETS
 set(ASSETS_fx
     assets-fx/logo.png
     assets-fx/crosshair.png
+    assets-fx/fnplay.png
+    assets-fx/fnedit.png
+    assets-fx/fnnew.png
+    assets-fx/fndelete.png
+    assets-fx/fnsearch.png
+    assets-fx/fnpage.png
     assets-fx/slot.png
     assets-fx/slotselected.png
     assets-fx/slotsource.png

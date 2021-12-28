@@ -23,6 +23,8 @@
 #define BLOCK_PLACEMENT_COOLDOWN 20
 
 extern bopti_image_t img_logo;
+extern bopti_image_t img_fn_play;
+extern bopti_image_t img_fn_new;
 
 Config config;
 World world;
@@ -480,6 +482,43 @@ void startGame() {
     }
 }
 
+void worldMenu() {
+    unsigned int focus = 0;
+
+    while (true) {
+        dclear(C_WHITE);
+
+        dtext(2, 1, C_BLACK, "Select World");
+        dhline(10, C_BLACK);
+
+        dtext_opt(64, 32, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_CENTER, "Coming soon!"); // TODO: Implement world storage
+
+        ui_functionIndicator(1, &img_fn_play);
+        ui_functionIndicator(3, &img_fn_new);
+
+        dupdate();
+
+        switch (ui_waitForInput(&focus, 0)) {
+            case INPUT_CHOICE_CONFIRM:
+                startGame();
+
+                return; // So that quitting a world returns to main menu
+
+            case INPUT_CHOICE_EXIT:
+                return;
+
+            case INPUT_CHOICE_FN:
+                if (ui_getFnKey() == 1 || ui_getFnKey() == 3) { // TODO: Make these keys perform different actions once world storage is done
+                    startGame();
+
+                    return;
+                }
+
+                break;
+        }
+    }
+}
+
 void main() {
     textures_init();
     physics_init();
@@ -511,7 +550,7 @@ void main() {
         switch (ui_waitForInput(&focus, 3)) {
             case INPUT_CHOICE_CONFIRM:
                 if (focus == 0) {
-                    startGame();
+                    worldMenu();
                 }
 
                 if (focus == 1) {

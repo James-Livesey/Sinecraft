@@ -5,6 +5,8 @@
 #include "ui.h"
 #include "common.h"
 
+int lastFnKey = 0;
+
 void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected) {
     dline(x1 + 1, y1, x2 - 1, y1, C_BLACK);
     dline(x1 + 1, y2, x2 - 1, y2, C_BLACK);
@@ -36,6 +38,10 @@ void ui_progressLabel(int x1, int y1, int x2, int y2, char* text, bool selected)
     }
 
     dtext_opt((x1 + x2) / 2, (y1 + y2) / 2, C_INVERT, C_NONE, DTEXT_CENTER, DTEXT_CENTER, text, -1);
+}
+
+void ui_functionIndicator(int fn, bopti_image_t* indicator) {
+    dimage(2 + ((fn - 1) * 21), 56, indicator);
 }
 
 int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
@@ -71,6 +77,20 @@ int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
         case KEY_EXE:
             return INPUT_CHOICE_CONFIRM;
 
+        case KEY_F1:
+        case KEY_F2:
+        case KEY_F3:
+        case KEY_F4:
+        case KEY_F5:
+        case KEY_F6:
+            lastFnKey = keycode_function(keyEvent.key);
+
+            if (lastFnKey < 0) {
+                lastFnKey = 0;
+            }
+
+            return INPUT_CHOICE_FN;
+
         case KEY_EXIT:
             return INPUT_CHOICE_EXIT;
 
@@ -79,4 +99,8 @@ int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
     }
 
     return INPUT_CHOICE_NONE;
+}
+
+int ui_getFnKey() {
+    return lastFnKey;
 }

@@ -6,6 +6,30 @@ crosshair.png:
     type: bopti-image
     name: img_crosshair
 
+fnplay.png:
+    type: bopti-image
+    name: img_fn_play
+
+fnedit.png:
+    type: bopti-image
+    name: img_fn_edit
+
+fnnew.png:
+    type: bopti-image
+    name: img_fn_new
+
+fndelete.png:
+    type: bopti-image
+    name: img_fn_delete
+
+fnsearch.png:
+    type: bopti-image
+    name: img_fn_search
+
+fnpage.png:
+    type: bopti-image
+    name: img_fn_page
+
 slot.png:
     type: bopti-image
     name: img_slot
