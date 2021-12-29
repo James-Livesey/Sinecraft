@@ -17,6 +17,8 @@ Sinecraft _should_ be compatible with:
 
 Colour calculator variants such as the Casio fx-CG50 and Casio Graph 90+E aren't supported yet since I don't own one to build Sinecraft for.
 
+Learn more about Sinecraft on the official [Sinecraft Wiki](https://github.com/James-Livesey/Sinecraft/wiki)!
+
 ## Building
 Sinecraft isn't in a remotely releaseable state, and so I'm not going to provide .g1a add-on files _just_ yet. Coming soon, though!
 
