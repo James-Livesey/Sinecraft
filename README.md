@@ -22,6 +22,8 @@ Learn more about Sinecraft on the official [Sinecraft Wiki](https://github.com/J
 ## Building
 Sinecraft isn't in a remotely releaseable state, and so I'm not going to provide .g1a add-on files _just_ yet. Coming soon, though!
 
+Before building, you may want to check the various flags in `src/flags.h`. These flags provide options for various things, such as whether the build is a debug build.
+
 To build Sinecraft yourself, you'll need to install [fxSDK](https://gitea.planet-casio.com/Lephenixnoir/fxsdk), a versatile community-built software development kit that runs well on Linux systems. If you have it (and its dependencies) installed, simply run in the root directory:
 
 ```bash
