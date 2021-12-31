@@ -515,6 +515,11 @@ void worldMenu() {
                 }
 
                 break;
+
+            case INPUT_CHOICE_MENU:
+                gint_osmenu();
+
+                break;
         }
     }
 }

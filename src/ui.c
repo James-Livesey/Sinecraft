@@ -45,7 +45,7 @@ void ui_functionIndicator(int fn, bopti_image_t* indicator) {
 }
 
 int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
-    key_event_t keyEvent = getkey();
+    key_event_t keyEvent = getkey_opt(GETKEY_DEFAULT & ~GETKEY_MENU, NULL);
 
     switch (keyEvent.key) {
         case KEY_UP:
