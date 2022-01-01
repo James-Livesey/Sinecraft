@@ -534,7 +534,7 @@ void main() {
     profiling_init();
     #endif
 
-    config = config_default();
+    config = config_load();
 
     unsigned int focus = 0;
 

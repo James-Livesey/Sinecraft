@@ -15,6 +15,8 @@ set(SOURCES
     src/lut.c
     src/common.h
     src/common.c
+    src/serial.h
+    src/serial.c
     src/coords.h
     src/coords.c
     src/ui.h

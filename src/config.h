@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
+#define MAX_CONFIG_FILE_SIZE 128
+
 typedef struct {
     unsigned int vernum;
     char username[8];
@@ -12,5 +14,6 @@ typedef struct {
 } Config;
 
 Config config_default();
+Config config_load();
 
 #endif
