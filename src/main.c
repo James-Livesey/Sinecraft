@@ -223,6 +223,31 @@ void optionsMenu() {
                     clearevents();
                 }
 
+                ui_message("Saving...", "", "", "");
+
+                dupdate();
+
+                int status = config_save(config);
+
+                if (status < 0) {
+                    char errorCodeLine[16];
+
+                    sprintf(errorCodeLine, "Error %d", status);
+
+                    ui_message(
+                        "Memory ERROR",
+                        "Couldn't write!",
+                        errorCodeLine,
+                        "   Press:[EXE]"
+                    );
+
+                    dupdate();
+
+                    while (!keydown(KEY_EXE)) {
+                        clearevents();
+                    }
+                }
+
                 return;
 
             case INPUT_CHOICE_MENU:

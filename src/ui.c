@@ -44,6 +44,16 @@ void ui_functionIndicator(int fn, bopti_image_t* indicator) {
     dimage(2 + ((fn - 1) * 21), 56, indicator);
 }
 
+void ui_message(char* line1, char* line2, char* line3, char* line4) {
+    drect(13, 13, 116, 52, C_BLACK);
+    drect_border(12, 12, 115, 51, C_WHITE, 1, C_BLACK);
+
+    dtext(16, 16, C_BLACK, line1);
+    dtext(16, 24, C_BLACK, line2);
+    dtext(16, 32, C_BLACK, line3);
+    dtext(16, 40, C_BLACK, line4);
+}
+
 int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
     key_event_t keyEvent = getkey_opt(GETKEY_DEFAULT & ~GETKEY_MENU, NULL);
 

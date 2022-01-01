@@ -18,7 +18,7 @@ Config config_default() {
 Config config_load() {
     Config config = config_default();
 
-    int file = BFile_Open(u"Sincft.cfg", BFile_ReadOnly);
+    int file = BFile_Open(CONFIG_FILE_PATH, BFile_ReadOnly);
 
     if (file < 0) { // For example, file may not exist
         return config;
@@ -29,7 +29,13 @@ Config config_load() {
 
     char buffer[MAX_CONFIG_FILE_SIZE] = "";
 
-    BFile_Read(file, &buffer, MIN(fileSize, MAX_CONFIG_FILE_SIZE), 0);
+    if (BFile_Read(file, &buffer, MIN(fileSize, MAX_CONFIG_FILE_SIZE), 0) < 0) {
+        BFile_Close(file);
+
+        return config; // Read error
+    }
+
+    BFile_Close(file);
 
     unsigned int vernum = serial_decodeUnsignedInt(buffer, &pointer);
 
@@ -48,4 +54,23 @@ Config config_load() {
     config.invertY = serial_decodeBool(buffer, &pointer);
 
     return config;
+}
+
+int config_save(Config config) {
+    int size = sizeof(config);
+
+    BFile_Remove(CONFIG_FILE_PATH);
+    BFile_Create(CONFIG_FILE_PATH, BFile_File, &size);
+
+    int file = BFile_Open(CONFIG_FILE_PATH, BFile_WriteOnly);
+
+    if (file < 0) {
+        return file; // Something went wrong
+    }
+
+    int error = BFile_Write(file, &config, size);
+
+    BFile_Close(file);
+
+    return error;
 }

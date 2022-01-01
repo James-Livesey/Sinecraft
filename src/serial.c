@@ -3,23 +3,23 @@
 #include "serial.h"
 
 int serial_decodeInt(char* buffer, unsigned int* pointer) {
-    serial_intConverter value;
+    serial_intConverter converter;
 
     for (unsigned int i = 0; i < 4; i++) {
-        value.asChars[i] = buffer[(*pointer)++];
+        converter.asChars[i] = buffer[(*pointer)++];
     }
 
-    return value.asInt;
+    return converter.asInt;
 }
 
 unsigned int serial_decodeUnsignedInt(char* buffer, unsigned int* pointer) {
-    serial_intConverter value;
+    serial_intConverter converter;
 
     for (unsigned int i = 0; i < 4; i++) {
-        value.asChars[i] = buffer[(*pointer)++];
+        converter.asChars[i] = buffer[(*pointer)++];
     }
 
-    return value.asUnsignedInt;
+    return converter.asUnsignedInt;
 }
 
 bool serial_decodeBool(char* buffer, unsigned int* pointer) {

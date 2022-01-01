@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 
+#define CONFIG_FILE_PATH u"\\\\fls0\\Sincft.cfg"
 #define MAX_CONFIG_FILE_SIZE 128
 
 typedef struct {
@@ -14,6 +15,8 @@ typedef struct {
 } Config;
 
 Config config_default();
+
 Config config_load();
+int config_save(Config config);
 
 #endif
