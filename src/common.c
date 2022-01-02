@@ -3,6 +3,14 @@
 #include "common.h"
 #include "lut.h"
 
+int common_rangeCheck(int value, int min, int max, int defaultValue) {
+    if (value < min || value > max) {
+        return defaultValue;
+    }
+
+    return value;
+}
+
 double common_sin(int deg) {
     if (deg < 0) {
         return -common_sin(-deg);

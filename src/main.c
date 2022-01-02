@@ -30,7 +30,7 @@ Config config;
 World world;
 Camera candidateCamera;
 Inventory inventory;
-bool skipKeypresses = false;
+int keypressTimer;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
@@ -67,10 +67,6 @@ void showProfile() {
 
 int getKeypresses() {
     int actualCamSpeed = 1 + (2 * ((double)config.camSpeed / 100));
-
-    if (skipKeypresses) {
-        return TIMER_CONTINUE;
-    }
 
     if (keydown(KEY_8)) {
         camera_moveInAriz(&candidateCamera, world, 0.2, candidateCamera.heading.ariz);
@@ -159,6 +155,16 @@ int getKeypresses() {
     return TIMER_CONTINUE;
 }
 
+void startKeypressTimer() {
+    keypressTimer = timer_configure(TIMER_ETMU, 1e5, GINT_CALL(getKeypresses));
+
+    timer_start(keypressTimer);
+}
+
+void stopKeypressTimer() {
+    timer_stop(keypressTimer);
+}
+
 void optionsMenu() {
     unsigned int focus = 0;
 
@@ -223,31 +229,6 @@ void optionsMenu() {
                     clearevents();
                 }
 
-                ui_message("Saving...", "", "", "");
-
-                dupdate();
-
-                int status = config_save(config);
-
-                if (status < 0) {
-                    char errorCodeLine[16];
-
-                    sprintf(errorCodeLine, "Error %d", status);
-
-                    ui_message(
-                        "Memory ERROR",
-                        "Couldn't write!",
-                        errorCodeLine,
-                        "   Press:[EXE]"
-                    );
-
-                    dupdate();
-
-                    while (!keydown(KEY_EXE)) {
-                        clearevents();
-                    }
-                }
-
                 return;
 
             case INPUT_CHOICE_MENU:
@@ -276,6 +257,33 @@ void optionsMenu() {
                 }
 
                 break;
+        }
+    }
+}
+
+void saveOptions() {
+    ui_message("Saving...", "", "", "");
+
+    dupdate();
+
+    int status = config_save(config);
+
+    if (status < 0) {
+        char errorCodeLine[16];
+
+        sprintf(errorCodeLine, "Error %d", status);
+
+        ui_message(
+            "Memory ERROR",
+            "Couldn't write!",
+            errorCodeLine,
+            "   Press:[EXE]"
+        );
+
+        dupdate();
+
+        while (!keydown(KEY_EXE)) {
+            clearevents();
         }
     }
 }
@@ -317,6 +325,7 @@ bool pauseMenu(bool renderOnly) {
 
                 if (focus == 1) {
                     optionsMenu();
+                    saveOptions();
 
                     dclear(C_WHITE);
                 }
@@ -383,9 +392,7 @@ void startGame() {
     inventory.slots[1].type = BLOCK_TYPE_GRASS;
     inventory.slots[1].count = MAX_COUNT_IN_SLOT;
 
-    int timer = timer_configure(TIMER_ETMU, 1e5, GINT_CALL(getKeypresses));
-
-    timer_start(timer);
+    startKeypressTimer();
 
     while (true) {
         candidateCamera.fov = config.fov;
@@ -436,17 +443,17 @@ void startGame() {
         } else if (shouldJump) {
             physics_jump(&sim);
         } else if (shouldOpenInventory) {
-            skipKeypresses = true;
+            stopKeypressTimer();
 
             inventory_open(&inventory);
 
-            skipKeypresses = false;
+            startKeypressTimer();
         } else if (shouldOpenCrafting) {
-            skipKeypresses = true;
+            stopKeypressTimer();
 
             inventory_openCrafting(&inventory, camera_getSelectedBlock().type != BLOCK_TYPE_CRAFTING_TABLE);
 
-            skipKeypresses = false;
+            startKeypressTimer();
         }
 
         if (!shouldDestroyNextBlock) {
@@ -484,7 +491,7 @@ void startGame() {
         clearevents();
 
         if (keydown(KEY_MENU) || keydown(KEY_EXIT)) {
-            skipKeypresses = true;
+            stopKeypressTimer();
 
             if (keydown(KEY_MENU)) {
                 pauseMenu(true);
@@ -496,7 +503,7 @@ void startGame() {
                 return;
             }
 
-            skipKeypresses = false;
+            startKeypressTimer();
         }
 
         #ifdef FLAG_PROFILING
@@ -585,6 +592,7 @@ void main() {
 
                 if (focus == 1) {
                     optionsMenu();
+                    saveOptions();
                 }
 
                 break;

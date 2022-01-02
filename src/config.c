@@ -1,3 +1,4 @@
+#include <gint/cpu.h>
 #include <gint/bfile.h>
 
 #include "config.h"
@@ -49,14 +50,19 @@ Config config_load() {
 
     serial_decodeCharArray(buffer, &pointer, config.username, sizeof(config.username));
 
-    config.fov = serial_decodeInt(buffer, &pointer);
-    config.camSpeed = serial_decodeInt(buffer, &pointer);
+    config.fov = common_rangeCheck(serial_decodeInt(buffer, &pointer), 30, 90, 60);
+    config.camSpeed = common_rangeCheck(serial_decodeInt(buffer, &pointer), 0, 200, 100);
     config.invertY = serial_decodeBool(buffer, &pointer);
 
     return config;
 }
 
+#include <gint/display.h>
+#include <gint/keyboard.h>
+
 int config_save(Config config) {
+    cpu_atomic_start();
+
     int size = sizeof(config);
 
     BFile_Remove(CONFIG_FILE_PATH);
@@ -65,12 +71,16 @@ int config_save(Config config) {
     int file = BFile_Open(CONFIG_FILE_PATH, BFile_WriteOnly);
 
     if (file < 0) {
+        cpu_atomic_end();
+
         return file; // Something went wrong
     }
 
     int error = BFile_Write(file, &config, size);
 
     BFile_Close(file);
+
+    cpu_atomic_end();
 
     return error;
 }

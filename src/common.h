@@ -14,6 +14,8 @@
 #define MSEC * 1000
 #define SEC MSEC * 1000
 
+int common_rangeCheck(int value, int min, int max, int defaultValue);
+
 int common_degrees(double rad);
 double common_radians(int deg);
 
