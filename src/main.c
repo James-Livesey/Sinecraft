@@ -20,6 +20,7 @@
 #include "profiling.h"
 
 #define ITEM_SWITCH_SHOW_TIME 300
+#define MESSAGE_SHOW_TIME 300
 #define BLOCK_PLACEMENT_COOLDOWN 20
 
 extern bopti_image_t img_logo;
@@ -37,6 +38,7 @@ bool shouldJump = false;
 bool shouldOpenInventory = false;
 bool shouldOpenCrafting = false;
 int lastItemSwitchTime = -ITEM_SWITCH_SHOW_TIME;
+int lastBlockOutOfBoundsMessageTime = -MESSAGE_SHOW_TIME;
 int lastDestructionStartTime = 0;
 double destructionProgress = -1;
 Block lastDestructionBlock = {.position = (CartesianVector) {0, 0, 0}, .type = BLOCK_TYPE_AIR};
@@ -431,10 +433,14 @@ void startGame() {
                 InventorySlot slot = inventory.slots[inventory.selectedHotbarSlot];
 
                 if (slot.count > 0 && slot.type != BLOCK_TYPE_AIR) {
-                    bool success = camera_placeBlockOnFace(&world, camera, slot.type);
+                    int status = camera_placeBlockOnFace(&world, camera, slot.type);
 
-                    if (inventory.gameMode == GAME_MODE_SURVIVAL && success) {
+                    if (inventory.gameMode == GAME_MODE_SURVIVAL && status == BLOCK_PLACE_SUCCESS) {
                         inventory.slots[inventory.selectedHotbarSlot].count--;
+                    }
+
+                    if (status == BLOCK_PLACE_OUT_OF_BOUNDS) {
+                        lastBlockOutOfBoundsMessageTime = physics_getCurrentTime();
                     }
                 }
 
@@ -480,6 +486,15 @@ void startGame() {
 
         if (inventory.gameMode == GAME_MODE_SURVIVAL && destructionProgress >= 0) {
             ui_progressBar(127 - 24, 1, 127 - 1, 11, destructionProgress);
+        }
+
+        if ((int)physics_getCurrentTime() - lastBlockOutOfBoundsMessageTime < MESSAGE_SHOW_TIME) {
+            ui_message(
+                "Block placement",
+                "outside of world",
+                "border!",
+                ""
+            );
         }
 
         #ifdef FLAG_PROFILING

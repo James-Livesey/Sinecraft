@@ -19,6 +19,14 @@ enum {
     FACE_PZ = 5
 };
 
+enum {
+    BLOCK_PLACE_SUCCESS,
+    BLOCK_PLACE_NOT_SELECTED,
+    BLOCK_PLACE_NOT_PLACEABLE,
+    BLOCK_PLACE_OUT_OF_BOUNDS,
+    BLOCK_PLACE_NOT_VISIBLE
+};
+
 typedef struct {
     CartesianVector position;
     PolarVector heading;
@@ -54,6 +62,6 @@ void camera_render(Camera camera, World world);
 
 Block camera_getSelectedBlock();
 int camera_destroySelectedBlock(World* world);
-bool camera_placeBlockOnFace(World* world, Camera camera, unsigned int type);
+int camera_placeBlockOnFace(World* world, Camera camera, unsigned int type);
 
 #endif
