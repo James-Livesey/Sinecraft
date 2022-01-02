@@ -57,9 +57,6 @@ Config config_load() {
     return config;
 }
 
-#include <gint/display.h>
-#include <gint/keyboard.h>
-
 int config_save(Config config) {
     cpu_atomic_start();
 
