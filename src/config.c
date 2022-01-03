@@ -60,6 +60,7 @@ Config config_load() {
 int config_save(Config config) {
     cpu_atomic_start();
 
+    int status;
     int size = sizeof(config);
 
     BFile_Remove(CONFIG_FILE_PATH);
@@ -73,11 +74,11 @@ int config_save(Config config) {
         return file; // Something went wrong
     }
 
-    int error = BFile_Write(file, &config, size);
+    status = BFile_Write(file, &config, size);
 
     BFile_Close(file);
 
     cpu_atomic_end();
 
-    return error;
+    return status;
 }

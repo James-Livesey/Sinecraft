@@ -3,6 +3,11 @@
 
 #include "coords.h"
 
+#define MAX_WORLD_NAME_LENGTH 8
+#define WORLD_FOLDER_FILE_PATH u"\\\\fls0\\Sincft"
+#define WORLD_FILE_PATH_BASE "\\\\fls0\\Sincft\\"
+#define WORLD_FILE_PATH_EXT ".scw"
+
 enum {
     BLOCK_TYPE_AIR = 0,
     BLOCK_TYPE_STONE = 1,
@@ -35,5 +40,7 @@ void world_setBlock(World* world, Block block);
 Block world_getBlock(World world, CartesianVector position);
 
 int world_getBlockTexture(int blockType, int face);
+
+int world_save(World world, char* name);
 
 #endif

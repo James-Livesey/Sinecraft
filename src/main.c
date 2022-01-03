@@ -31,7 +31,9 @@ Config config;
 World world;
 Camera candidateCamera;
 Inventory inventory;
+char worldName[MAX_WORLD_NAME_LENGTH] = "";
 int keypressTimer;
+bool inWorld = false;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
@@ -167,6 +169,33 @@ void stopKeypressTimer() {
     timer_stop(keypressTimer);
 }
 
+void saveWorld() {
+    ui_message("Saving world:", worldName, "", "Please wait...");
+
+    dupdate();
+
+    int status = world_save(world, worldName);
+
+    if (status < 0) {
+        char errorCodeLine[16];
+
+        sprintf(errorCodeLine, "Error %d", status);
+
+        ui_message(
+            "Memory ERROR",
+            "Couldn't write!",
+            errorCodeLine,
+            "   Press:[EXE]"
+        );
+
+        dupdate();
+
+        while (!keydown(KEY_EXE)) {
+            clearevents();
+        }
+    }
+}
+
 void optionsMenu() {
     unsigned int focus = 0;
 
@@ -234,6 +263,10 @@ void optionsMenu() {
                 return;
 
             case INPUT_CHOICE_MENU:
+                if (inWorld) {
+                    saveWorld();
+                }
+
                 gint_osmenu();
 
                 break;
@@ -343,9 +376,13 @@ bool pauseMenu(bool renderOnly) {
                     clearevents();
                 }
 
+                saveWorld();
+
                 return false;
 
             case INPUT_CHOICE_MENU:
+                saveWorld();
+
                 gint_osmenu();
 
                 break;
@@ -360,6 +397,8 @@ void startGame() {
 
     candidateCamera = camera_default();
     inventory = inventory_default();
+
+    inWorld = true;
 
     candidateCamera.position.x = -4;
     candidateCamera.position.y = 1;
@@ -510,11 +549,16 @@ void startGame() {
 
             if (keydown(KEY_MENU)) {
                 pauseMenu(true);
+                saveWorld();
 
                 gint_osmenu();
             }
 
             if (pauseMenu(false)) {
+                saveWorld();
+
+                inWorld = false;
+
                 return;
             }
 
@@ -547,6 +591,8 @@ void worldMenu() {
 
         switch (ui_waitForInput(&focus, 0)) {
             case INPUT_CHOICE_CONFIRM:
+                strcpy(worldName, "Test"); // TODO: Add world name choice
+
                 startGame();
 
                 return; // So that quitting a world returns to main menu
@@ -556,6 +602,8 @@ void worldMenu() {
 
             case INPUT_CHOICE_FN:
                 if (ui_getFnKey() == 1 || ui_getFnKey() == 3) { // TODO: Make these keys perform different actions once world storage is done
+                    strcpy(worldName, "Test"); // TODO: Add world name choice
+
                     startGame();
 
                     return;
