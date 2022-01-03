@@ -85,24 +85,6 @@ int world_getBlockTexture(int blockType, int face) {
     return TEXTURE_DEFAULT;
 }
 
-int world_createFolder() {
-    int handle;
-    uint16_t foundPath[30];
-    struct BFile_FileInfo fileInfo;
-
-    int status = BFile_FindFirst(WORLD_FOLDER_FILE_PATH, &handle, foundPath, &fileInfo);
-
-    BFile_FindClose(handle);
-
-    if (status == -1) { // Entry not found
-        BFile_Create(WORLD_FOLDER_FILE_PATH, BFile_Folder, NULL);
-
-        return 0;
-    }
-
-    return status;
-}
-
 int world_save(World world, char* name) {
     cpu_atomic_start();
 
@@ -120,12 +102,7 @@ int world_save(World world, char* name) {
         worldFilePath[i] = worldFilePathBuilder[i];
     }
 
-    status = world_createFolder();
-
-    if (status < 0) {
-        goto saveEnd; // Something went wrong
-    }
-
+    BFile_Remove(worldFilePath);
     BFile_Create(worldFilePath, BFile_File, &size);
 
     int file = BFile_Open(worldFilePath, BFile_WriteOnly);
