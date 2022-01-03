@@ -33,7 +33,6 @@ Camera candidateCamera;
 Inventory inventory;
 char worldName[MAX_WORLD_NAME_LENGTH] = "";
 int keypressTimer;
-bool inWorld = false;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
 bool shouldJump = false;
@@ -263,10 +262,6 @@ void optionsMenu() {
                 return;
 
             case INPUT_CHOICE_MENU:
-                if (inWorld) {
-                    saveWorld();
-                }
-
                 gint_osmenu();
 
                 break;
@@ -376,13 +371,9 @@ bool pauseMenu(bool renderOnly) {
                     clearevents();
                 }
 
-                saveWorld();
-
                 return false;
 
             case INPUT_CHOICE_MENU:
-                saveWorld();
-
                 gint_osmenu();
 
                 break;
@@ -397,8 +388,6 @@ void startGame() {
 
     candidateCamera = camera_default();
     inventory = inventory_default();
-
-    inWorld = true;
 
     candidateCamera.position.x = -4;
     candidateCamera.position.y = 1;
@@ -549,16 +538,11 @@ void startGame() {
 
             if (keydown(KEY_MENU)) {
                 pauseMenu(true);
-                saveWorld();
 
                 gint_osmenu();
             }
 
             if (pauseMenu(false)) {
-                saveWorld();
-
-                inWorld = false;
-
                 return;
             }
 
@@ -594,6 +578,7 @@ void worldMenu() {
                 strcpy(worldName, "Test"); // TODO: Add world name choice
 
                 startGame();
+                saveWorld();
 
                 return; // So that quitting a world returns to main menu
 
@@ -605,6 +590,7 @@ void worldMenu() {
                     strcpy(worldName, "Test"); // TODO: Add world name choice
 
                     startGame();
+                    saveWorld();
 
                     return;
                 }
