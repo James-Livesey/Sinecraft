@@ -22,6 +22,16 @@ unsigned int serial_decodeUnsignedInt(char* buffer, unsigned int* pointer) {
     return converter.asUnsignedInt;
 }
 
+double serial_decodeDouble(char* buffer, unsigned int* pointer) {
+    serial_doubleConverter converter;
+
+    for (unsigned int i = 0; i < 8; i++) {
+        converter.asChars[i] = buffer[(*pointer)++];
+    }
+
+    return converter.asDouble;
+}
+
 bool serial_decodeBool(char* buffer, unsigned int* pointer) {
     return (bool)buffer[(*pointer)++];
 }

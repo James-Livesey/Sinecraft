@@ -31,6 +31,13 @@ typedef struct {
     Block* changedBlocks;
 } World;
 
+typedef struct {
+    unsigned int vernum;
+    CartesianVector initialCameraPosition;
+    PolarVector initialCameraHeading;
+    World world;
+} WorldSave;
+
 CartesianVector* world_getBlockVertices(Block block);
 
 World world_default();
@@ -38,8 +45,12 @@ void world_addBlock(World* world, Block block);
 void world_setBlock(World* world, Block block);
 Block world_getBlock(World world, CartesianVector position);
 
+WorldSave world_defaultSave();
+unsigned int world_getSaveSize(WorldSave worldSave);
+
 int world_getBlockTexture(int blockType, int face);
 
-int world_save(World world, char* name);
+WorldSave world_load(char* name);
+int world_save(WorldSave worldSave, char* name);
 
 #endif

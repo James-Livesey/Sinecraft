@@ -173,7 +173,14 @@ void saveWorld() {
 
     dupdate();
 
-    int status = world_save(world, worldName);
+    WorldSave worldSave = world_defaultSave();
+
+    worldSave.initialCameraPosition = candidateCamera.position;
+    worldSave.initialCameraHeading = candidateCamera.heading;
+
+    worldSave.world = world;
+
+    int status = world_save(worldSave, worldName);
 
     if (status < 0) {
         char errorCodeLine[16];
@@ -389,31 +396,31 @@ void startGame() {
     candidateCamera = camera_default();
     inventory = inventory_default();
 
-    candidateCamera.position.x = -4;
+    candidateCamera.position.x = 1;
     candidateCamera.position.y = 1;
     candidateCamera.position.z = 1;
 
     world_addBlock(&world, (Block) {
-        .position = (CartesianVector) {1, 0, 1},
+        .position = (CartesianVector) {6, 0, 1},
         .type = BLOCK_TYPE_WOOD
     });
 
     world_addBlock(&world, (Block) {
-        .position = (CartesianVector) {1, 1, 1},
+        .position = (CartesianVector) {6, 1, 1},
         .type = BLOCK_TYPE_WOOD
     });
 
     for (unsigned int x = 0; x < 3; x++) {
         for (unsigned int z = 0; z < 3; z++) {
             world_addBlock(&world, (Block) {
-                .position = (CartesianVector) {x, 2, z},
+                .position = (CartesianVector) {x + 5, 2, z},
                 .type = (x == 1 && z == 1) ? BLOCK_TYPE_WOOD : BLOCK_TYPE_LEAVES
             });
         }
     }
 
     world_addBlock(&world, (Block) {
-        .position = (CartesianVector) {1, 3, 1},
+        .position = (CartesianVector) {6, 3, 1},
         .type = BLOCK_TYPE_LEAVES
     });
 

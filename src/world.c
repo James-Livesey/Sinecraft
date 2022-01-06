@@ -4,6 +4,8 @@
 #include <gint/bfile.h>
 
 #include "world.h"
+#include "flags.h"
+#include "serial.h"
 #include "coords.h"
 #include "textures.h"
 
@@ -85,22 +87,108 @@ int world_getBlockTexture(int blockType, int face) {
     return TEXTURE_DEFAULT;
 }
 
-int world_save(World world, char* name) {
+WorldSave world_defaultSave() {
+    return (WorldSave) {
+        .vernum = VERNUM,
+        .initialCameraPosition = coords_defaultCartesian(),
+        .initialCameraHeading = coords_defaultPolar(),
+        .world = world_default()
+    };
+}
+
+unsigned int world_getSaveSize(WorldSave worldSave) {
+    return sizeof(worldSave) + (worldSave.world.changedBlockCount * sizeof(Block));
+}
+
+void buildWorldFilePath(uint16_t* buffer, char* name) {
+    char builder[30];
+
+    strcpy(builder, WORLD_FILE_PATH_BASE);
+    strcat(builder, name);
+    strcat(builder, WORLD_FILE_PATH_EXT);
+
+    for (unsigned int i = 0; i < 30; i++) {
+        buffer[i] = builder[i];
+    }
+}
+
+WorldSave world_load(char* name) {
+    WorldSave worldSave = world_defaultSave();
+
+    uint16_t worldFilePath[30];
+
+    buildWorldFilePath(worldFilePath, name);
+
+    int file = BFile_Open(worldFilePath, BFile_ReadOnly);
+
+    if (file < 0) { // For example, file may not exist
+        return worldSave;
+    }
+
+    unsigned int fileSize = BFile_Size(file);
+    unsigned int pointer = 0;
+
+    char* buffer = malloc(fileSize);
+
+    if (BFile_Read(file, &buffer, fileSize, 0) < 0) {
+        BFile_Close(file);
+
+        goto loadEnd;
+    }
+
+    BFile_Close(file);
+
+    unsigned int vernum = serial_decodeUnsignedInt(buffer, &pointer);
+
+    if (vernum > VERNUM) {
+        goto loadEnd; // World save is from newer version than expected
+    }
+
+    // Perform backwards-compatible conversion here
+
+    worldSave.vernum = vernum;
+
+    worldSave.initialCameraPosition = (CartesianVector) {
+        serial_decodeDouble(buffer, &pointer),
+        serial_decodeDouble(buffer, &pointer),
+        serial_decodeDouble(buffer, &pointer)
+    };
+
+    worldSave.initialCameraHeading = (PolarVector) {
+        serial_decodeDouble(buffer, &pointer),
+        serial_decodeDouble(buffer, &pointer),
+        serial_decodeDouble(buffer, &pointer)
+    };
+
+    unsigned int targetBlockCount = serial_decodeUnsignedInt(buffer, &pointer);
+
+    for (unsigned int i = 0; i < targetBlockCount; i++) {
+        world_addBlock(&(worldSave.world), (Block) {
+            (CartesianVector) {
+                serial_decodeDouble(buffer, &pointer),
+                serial_decodeDouble(buffer, &pointer),
+                serial_decodeDouble(buffer, &pointer)
+            },
+            serial_decodeUnsignedInt(buffer, &pointer)
+        });
+    }
+
+    loadEnd:
+
+    free(buffer);
+
+    return worldSave;
+}
+
+int world_save(WorldSave worldSave, char* name) {
     cpu_atomic_start();
 
     int status;
-    int size = world_getSize(world);
+    int size = world_getSaveSize(worldSave);
 
     uint16_t worldFilePath[30];
-    char worldFilePathBuilder[30];
 
-    strcpy(worldFilePathBuilder, WORLD_FILE_PATH_BASE);
-    strcat(worldFilePathBuilder, name);
-    strcat(worldFilePathBuilder, WORLD_FILE_PATH_EXT);
-
-    for (unsigned int i = 0; i < 30; i++) {
-        worldFilePath[i] = worldFilePathBuilder[i];
-    }
+    buildWorldFilePath(worldFilePath, name);
 
     BFile_Remove(worldFilePath);
     BFile_Create(worldFilePath, BFile_File, &size);
@@ -113,7 +201,7 @@ int world_save(World world, char* name) {
         goto saveEnd; // Something went wrong
     }
 
-    status = BFile_Write(file, &world, size);
+    status = BFile_Write(file, &worldSave, size);
 
     BFile_Close(file);
 
