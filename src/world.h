@@ -2,6 +2,7 @@
 #define WORLD_H_
 
 #include "coords.h"
+#include "inventory.h"
 
 #define MAX_WORLD_NAME_LENGTH 8
 #define WORLD_FILE_PATH_BASE "\\\\fls0\\"
@@ -35,6 +36,7 @@ typedef struct {
     unsigned int vernum;
     CartesianVector initialCameraPosition;
     PolarVector initialCameraHeading;
+    Inventory inventory;
     World world;
 } WorldSave;
 

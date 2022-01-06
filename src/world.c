@@ -7,6 +7,7 @@
 #include "flags.h"
 #include "serial.h"
 #include "coords.h"
+#include "inventory.h"
 #include "textures.h"
 
 const int BLOCK_INFO[] = {
@@ -92,6 +93,7 @@ WorldSave world_defaultSave() {
         .vernum = VERNUM,
         .initialCameraPosition = coords_defaultCartesian(),
         .initialCameraHeading = coords_defaultPolar(),
+        .inventory = inventory_default(),
         .world = world_default()
     };
 }
@@ -112,6 +114,21 @@ void buildWorldFilePath(uint16_t* buffer, char* name) {
     }
 }
 
+// TODO: Pointer may not be at wrap yet, so we could read earlier
+int readNext(char* queue, unsigned int* pointer, int file) {
+    if ((*pointer) < 1024) {
+        return 0;
+    }
+
+    if (BFile_Read(file, queue, 1024, -1) < 0) {
+        return -1;
+    }
+
+    (*pointer) = 0;
+
+    return 0;
+}
+
 WorldSave world_load(char* name) {
     WorldSave worldSave = world_defaultSave();
 
@@ -128,17 +145,16 @@ WorldSave world_load(char* name) {
     unsigned int fileSize = BFile_Size(file);
     unsigned int pointer = 0;
 
-    char* buffer = malloc(fileSize);
+    // FIXME: Crashes for large files over this size
+    char queue[1024];
 
-    if (BFile_Read(file, &buffer, fileSize, 0) < 0) {
-        BFile_Close(file);
-
+    if (BFile_Read(file, &queue, fileSize, 0) < 0) {
         goto loadEnd;
     }
 
     BFile_Close(file);
 
-    unsigned int vernum = serial_decodeUnsignedInt(buffer, &pointer);
+    unsigned int vernum = serial_decodeUnsignedInt(queue, &pointer);
 
     if (vernum > VERNUM) {
         goto loadEnd; // World save is from newer version than expected
@@ -149,38 +165,73 @@ WorldSave world_load(char* name) {
     worldSave.vernum = vernum;
 
     worldSave.initialCameraPosition = (CartesianVector) {
-        serial_decodeDouble(buffer, &pointer),
-        serial_decodeDouble(buffer, &pointer),
-        serial_decodeDouble(buffer, &pointer)
+        serial_decodeDouble(queue, &pointer),
+        serial_decodeDouble(queue, &pointer),
+        serial_decodeDouble(queue, &pointer)
     };
 
     worldSave.initialCameraHeading = (PolarVector) {
-        serial_decodeDouble(buffer, &pointer),
-        serial_decodeDouble(buffer, &pointer),
-        serial_decodeDouble(buffer, &pointer)
+        serial_decodeDouble(queue, &pointer),
+        serial_decodeDouble(queue, &pointer),
+        serial_decodeDouble(queue, &pointer)
     };
 
-    unsigned int targetBlockCount = serial_decodeUnsignedInt(buffer, &pointer);
+    worldSave.inventory.gameMode = serial_decodeInt(queue, &pointer);
+
+    for (unsigned int i = 0; i < SLOTS_IN_INVENTORY; i++) {
+        worldSave.inventory.slots[i] = (InventorySlot) {
+            serial_decodeUnsignedInt(queue, &pointer),
+            serial_decodeUnsignedInt(queue, &pointer)
+        };
+    }
+
+    worldSave.inventory.selectedHotbarSlot = serial_decodeUnsignedInt(queue, &pointer);
+
+    unsigned int targetBlockCount = serial_decodeUnsignedInt(queue, &pointer);
+
+    if (readNext(queue, &pointer, file) < 0) {
+        goto loadEnd;
+    }
 
     for (unsigned int i = 0; i < targetBlockCount; i++) {
         world_addBlock(&(worldSave.world), (Block) {
             (CartesianVector) {
-                serial_decodeDouble(buffer, &pointer),
-                serial_decodeDouble(buffer, &pointer),
-                serial_decodeDouble(buffer, &pointer)
+                serial_decodeDouble(queue, &pointer),
+                serial_decodeDouble(queue, &pointer),
+                serial_decodeDouble(queue, &pointer)
             },
-            serial_decodeUnsignedInt(buffer, &pointer)
+            serial_decodeUnsignedInt(queue, &pointer)
         });
+
+        if (readNext(queue, &pointer, file) < 0) {
+        goto loadEnd;
+    }
     }
 
     loadEnd:
 
-    free(buffer);
+    BFile_Close(file);
 
     return worldSave;
 }
 
 int world_save(WorldSave worldSave, char* name) {
+    char* buffer = malloc(world_getSaveSize(worldSave));
+
+    memcpy(buffer, &worldSave, world_getSaveSize(worldSave));
+
+    unsigned int pointer = sizeof(WorldSave) - sizeof(&(worldSave.world));
+
+    for (unsigned int i = 0; i < worldSave.world.changedBlockCount; i++) {
+        char blockBuffer[sizeof(Block)];
+
+        memcpy(blockBuffer, &(worldSave.world.changedBlocks[i]), sizeof(Block));
+
+        for (unsigned int j = 0; j < sizeof(Block); j++) {
+            buffer[pointer++] = blockBuffer[j];
+        }
+    }
+
     cpu_atomic_start();
 
     int status;
@@ -201,11 +252,13 @@ int world_save(WorldSave worldSave, char* name) {
         goto saveEnd; // Something went wrong
     }
 
-    status = BFile_Write(file, &worldSave, size);
+    status = BFile_Write(file, buffer, size);
 
     BFile_Close(file);
 
     saveEnd:
+
+    free(buffer);
 
     cpu_atomic_end();
 

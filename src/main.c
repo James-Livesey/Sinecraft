@@ -168,6 +168,20 @@ void stopKeypressTimer() {
     timer_stop(keypressTimer);
 }
 
+void loadWorld() {
+    ui_message("Loading world:", worldName, "", "Please wait...");
+
+    dupdate();
+
+    WorldSave worldSave = world_load(worldName);
+
+    candidateCamera.position = worldSave.initialCameraPosition;
+    candidateCamera.heading = worldSave.initialCameraHeading;
+
+    inventory = worldSave.inventory;
+    world = worldSave.world;
+}
+
 void saveWorld() {
     ui_message("Saving world:", worldName, "", "Please wait...");
 
@@ -178,6 +192,7 @@ void saveWorld() {
     worldSave.initialCameraPosition = candidateCamera.position;
     worldSave.initialCameraHeading = candidateCamera.heading;
 
+    worldSave.inventory = inventory;
     worldSave.world = world;
 
     int status = world_save(worldSave, worldName);
@@ -388,11 +403,8 @@ bool pauseMenu(bool renderOnly) {
     }
 }
 
-void startGame() {
+void newWorld() {
     world = world_default();
-    Camera camera;
-    PhysicsSimulation sim = physics_default(&candidateCamera, &world);
-
     candidateCamera = camera_default();
     inventory = inventory_default();
 
@@ -428,6 +440,11 @@ void startGame() {
     inventory.slots[0].count = MAX_COUNT_IN_SLOT;
     inventory.slots[1].type = BLOCK_TYPE_GRASS;
     inventory.slots[1].count = MAX_COUNT_IN_SLOT;
+}
+
+void startGame() {
+    Camera camera;
+    PhysicsSimulation sim = physics_default(&candidateCamera, &world);
 
     startKeypressTimer();
 
@@ -595,6 +612,14 @@ void worldMenu() {
             case INPUT_CHOICE_FN:
                 if (ui_getFnKey() == 1 || ui_getFnKey() == 3) { // TODO: Make these keys perform different actions once world storage is done
                     strcpy(worldName, "Test"); // TODO: Add world name choice
+
+                    if (ui_getFnKey() == 1) {
+                        loadWorld();
+                    }
+
+                    if (ui_getFnKey() == 3) {
+                        newWorld();
+                    }
 
                     startGame();
                     saveWorld();
