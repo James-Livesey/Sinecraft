@@ -114,23 +114,13 @@ void buildWorldFilePath(uint16_t* buffer, char* name) {
     }
 }
 
-// TODO: Pointer may not be at wrap yet, so we could read earlier
-int readNext(char* queue, unsigned int* pointer, int file) {
-    if ((*pointer) < 1024) {
-        return 0;
-    }
-
-    if (BFile_Read(file, queue, 1024, -1) < 0) {
-        return -1;
-    }
-
-    (*pointer) = 0;
-
-    return 0;
-}
-
-WorldSave world_load(char* name) {
+WorldSaveStatus world_load(char* name) {
     WorldSave worldSave = world_defaultSave();
+
+    WorldSaveStatus status = {
+        .status = WORLD_SAVE_SUCCESS,
+        .worldSave = worldSave
+    };
 
     uint16_t worldFilePath[30];
 
@@ -139,25 +129,36 @@ WorldSave world_load(char* name) {
     int file = BFile_Open(worldFilePath, BFile_ReadOnly);
 
     if (file < 0) { // For example, file may not exist
-        return worldSave;
+        status.status = WORLD_SAVE_CANNOT_LOAD;
+
+        return status;
     }
 
     unsigned int fileSize = BFile_Size(file);
     unsigned int pointer = 0;
 
-    // FIXME: Crashes for large files over this size
-    char queue[1024];
+    char buffer[MAX_WORLD_SIZE];
 
-    if (BFile_Read(file, &queue, fileSize, 0) < 0) {
+    if (fileSize > MAX_WORLD_SIZE) {
+        status.status = WORLD_SAVE_TOO_BIG;
+
+        goto loadEnd;
+    }
+
+    if (BFile_Read(file, &buffer, fileSize, 0) < 0) {
+        status.status = WORLD_SAVE_CANNOT_LOAD;
+
         goto loadEnd;
     }
 
     BFile_Close(file);
 
-    unsigned int vernum = serial_decodeUnsignedInt(queue, &pointer);
+    unsigned int vernum = serial_decodeUnsignedInt(buffer, &pointer);
 
     if (vernum > VERNUM) {
-        goto loadEnd; // World save is from newer version than expected
+        status.status = WORLD_SAVE_NEWER_THAN_EXPECTED;
+
+        goto loadEnd;
     }
 
     // Perform backwards-compatible conversion here
@@ -165,54 +166,48 @@ WorldSave world_load(char* name) {
     worldSave.vernum = vernum;
 
     worldSave.initialCameraPosition = (CartesianVector) {
-        serial_decodeDouble(queue, &pointer),
-        serial_decodeDouble(queue, &pointer),
-        serial_decodeDouble(queue, &pointer)
+        serial_decodeDouble(buffer, &pointer),
+        serial_decodeDouble(buffer, &pointer),
+        serial_decodeDouble(buffer, &pointer)
     };
 
     worldSave.initialCameraHeading = (PolarVector) {
-        serial_decodeDouble(queue, &pointer),
-        serial_decodeDouble(queue, &pointer),
-        serial_decodeDouble(queue, &pointer)
+        serial_decodeDouble(buffer, &pointer),
+        serial_decodeDouble(buffer, &pointer),
+        serial_decodeDouble(buffer, &pointer)
     };
 
-    worldSave.inventory.gameMode = serial_decodeInt(queue, &pointer);
+    worldSave.inventory.gameMode = serial_decodeInt(buffer, &pointer);
 
     for (unsigned int i = 0; i < SLOTS_IN_INVENTORY; i++) {
         worldSave.inventory.slots[i] = (InventorySlot) {
-            serial_decodeUnsignedInt(queue, &pointer),
-            serial_decodeUnsignedInt(queue, &pointer)
+            serial_decodeUnsignedInt(buffer, &pointer),
+            serial_decodeUnsignedInt(buffer, &pointer)
         };
     }
 
-    worldSave.inventory.selectedHotbarSlot = serial_decodeUnsignedInt(queue, &pointer);
+    worldSave.inventory.selectedHotbarSlot = serial_decodeUnsignedInt(buffer, &pointer);
 
-    unsigned int targetBlockCount = serial_decodeUnsignedInt(queue, &pointer);
-
-    if (readNext(queue, &pointer, file) < 0) {
-        goto loadEnd;
-    }
+    unsigned int targetBlockCount = serial_decodeUnsignedInt(buffer, &pointer);
 
     for (unsigned int i = 0; i < targetBlockCount; i++) {
         world_addBlock(&(worldSave.world), (Block) {
             (CartesianVector) {
-                serial_decodeDouble(queue, &pointer),
-                serial_decodeDouble(queue, &pointer),
-                serial_decodeDouble(queue, &pointer)
+                serial_decodeDouble(buffer, &pointer),
+                serial_decodeDouble(buffer, &pointer),
+                serial_decodeDouble(buffer, &pointer)
             },
-            serial_decodeUnsignedInt(queue, &pointer)
+            serial_decodeUnsignedInt(buffer, &pointer)
         });
+    }
 
-        if (readNext(queue, &pointer, file) < 0) {
-        goto loadEnd;
-    }
-    }
+    status.worldSave = worldSave;
 
     loadEnd:
 
     BFile_Close(file);
 
-    return worldSave;
+    return status;
 }
 
 int world_save(WorldSave worldSave, char* name) {
