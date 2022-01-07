@@ -168,6 +168,65 @@ void stopKeypressTimer() {
     timer_stop(keypressTimer);
 }
 
+void showAlert(char* line1, char* line2, char* line3, char* line4) {
+    ui_message(line1, line2, line3, line4);
+
+    dupdate();
+
+    while (!keydown(KEY_EXE)) {
+        clearevents();
+    }
+}
+
+bool loadWorld() {
+    ui_message("Loading world:", worldName, "", "Please wait...");
+
+    dupdate();
+
+    WorldSaveStatus status = world_load(worldName);
+
+    if (status.status == WORLD_SAVE_CANNOT_LOAD) {
+        showAlert(
+            "Memory ERROR",
+            "Couldn't read!",
+            "",
+            "   Press:[EXE]"
+        );
+
+        return false;
+    }
+
+    if (status.status == WORLD_SAVE_TOO_BIG) {
+        showAlert(
+            "Memory ERROR",
+            "World too big!",
+            "Must be < 16 KiB", // Update this value from `MAX_WORLD_SIZE`
+            "   Press:[EXE]"
+        );
+
+        return false;
+    }
+
+    if (status.status == WORLD_SAVE_NEWER_THAN_EXPECTED) {
+        showAlert(
+            "Update Sinecraft",
+            "to play this",
+            "world",
+            "   Press:[EXE]"
+        );
+
+        return false;
+    }
+
+    candidateCamera.position = status.worldSave.initialCameraPosition;
+    candidateCamera.heading = status.worldSave.initialCameraHeading;
+
+    inventory = status.worldSave.inventory;
+    world = status.worldSave.world;
+
+    return true;
+}
+
 void saveWorld() {
     ui_message("Saving world:", worldName, "", "Please wait...");
 
@@ -178,6 +237,7 @@ void saveWorld() {
     worldSave.initialCameraPosition = candidateCamera.position;
     worldSave.initialCameraHeading = candidateCamera.heading;
 
+    worldSave.inventory = inventory;
     worldSave.world = world;
 
     int status = world_save(worldSave, worldName);
@@ -187,18 +247,12 @@ void saveWorld() {
 
         sprintf(errorCodeLine, "Error %d", status);
 
-        ui_message(
+        showAlert(
             "Memory ERROR",
             "Couldn't write!",
             errorCodeLine,
             "   Press:[EXE]"
         );
-
-        dupdate();
-
-        while (!keydown(KEY_EXE)) {
-            clearevents();
-        }
     }
 }
 
@@ -310,18 +364,12 @@ void saveOptions() {
 
         sprintf(errorCodeLine, "Error %d", status);
 
-        ui_message(
+        showAlert(
             "Memory ERROR",
             "Couldn't write!",
             errorCodeLine,
             "   Press:[EXE]"
         );
-
-        dupdate();
-
-        while (!keydown(KEY_EXE)) {
-            clearevents();
-        }
     }
 }
 
@@ -388,11 +436,8 @@ bool pauseMenu(bool renderOnly) {
     }
 }
 
-void startGame() {
+void newWorld() {
     world = world_default();
-    Camera camera;
-    PhysicsSimulation sim = physics_default(&candidateCamera, &world);
-
     candidateCamera = camera_default();
     inventory = inventory_default();
 
@@ -428,6 +473,11 @@ void startGame() {
     inventory.slots[0].count = MAX_COUNT_IN_SLOT;
     inventory.slots[1].type = BLOCK_TYPE_GRASS;
     inventory.slots[1].count = MAX_COUNT_IN_SLOT;
+}
+
+void startGame() {
+    Camera camera;
+    PhysicsSimulation sim = physics_default(&candidateCamera, &world);
 
     startKeypressTimer();
 
@@ -584,6 +634,7 @@ void worldMenu() {
             case INPUT_CHOICE_CONFIRM:
                 strcpy(worldName, "Test"); // TODO: Add world name choice
 
+                newWorld();
                 startGame();
                 saveWorld();
 
@@ -594,12 +645,24 @@ void worldMenu() {
 
             case INPUT_CHOICE_FN:
                 if (ui_getFnKey() == 1 || ui_getFnKey() == 3) { // TODO: Make these keys perform different actions once world storage is done
+                    bool start = true;
+
                     strcpy(worldName, "Test"); // TODO: Add world name choice
 
-                    startGame();
-                    saveWorld();
+                    if (ui_getFnKey() == 1) {
+                        start = loadWorld();
+                    }
 
-                    return;
+                    if (ui_getFnKey() == 3) {
+                        newWorld();
+                    }
+
+                    if (start) {
+                        startGame();
+                        saveWorld();
+
+                        return;
+                    }
                 }
 
                 break;

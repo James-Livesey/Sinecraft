@@ -7,6 +7,7 @@
 #include "flags.h"
 #include "serial.h"
 #include "coords.h"
+#include "inventory.h"
 #include "textures.h"
 
 const int BLOCK_INFO[] = {
@@ -92,6 +93,7 @@ WorldSave world_defaultSave() {
         .vernum = VERNUM,
         .initialCameraPosition = coords_defaultCartesian(),
         .initialCameraHeading = coords_defaultPolar(),
+        .inventory = inventory_default(),
         .world = world_default()
     };
 }
@@ -112,8 +114,13 @@ void buildWorldFilePath(uint16_t* buffer, char* name) {
     }
 }
 
-WorldSave world_load(char* name) {
+WorldSaveStatus world_load(char* name) {
     WorldSave worldSave = world_defaultSave();
+
+    WorldSaveStatus status = {
+        .status = WORLD_SAVE_SUCCESS,
+        .worldSave = worldSave
+    };
 
     uint16_t worldFilePath[30];
 
@@ -122,16 +129,24 @@ WorldSave world_load(char* name) {
     int file = BFile_Open(worldFilePath, BFile_ReadOnly);
 
     if (file < 0) { // For example, file may not exist
-        return worldSave;
+        status.status = WORLD_SAVE_CANNOT_LOAD;
+
+        return status;
     }
 
     unsigned int fileSize = BFile_Size(file);
     unsigned int pointer = 0;
 
-    char* buffer = malloc(fileSize);
+    char buffer[MAX_WORLD_SIZE];
+
+    if (fileSize > MAX_WORLD_SIZE) {
+        status.status = WORLD_SAVE_TOO_BIG;
+
+        goto loadEnd;
+    }
 
     if (BFile_Read(file, &buffer, fileSize, 0) < 0) {
-        BFile_Close(file);
+        status.status = WORLD_SAVE_CANNOT_LOAD;
 
         goto loadEnd;
     }
@@ -141,7 +156,9 @@ WorldSave world_load(char* name) {
     unsigned int vernum = serial_decodeUnsignedInt(buffer, &pointer);
 
     if (vernum > VERNUM) {
-        goto loadEnd; // World save is from newer version than expected
+        status.status = WORLD_SAVE_NEWER_THAN_EXPECTED;
+
+        goto loadEnd;
     }
 
     // Perform backwards-compatible conversion here
@@ -160,6 +177,17 @@ WorldSave world_load(char* name) {
         serial_decodeDouble(buffer, &pointer)
     };
 
+    worldSave.inventory.gameMode = serial_decodeInt(buffer, &pointer);
+
+    for (unsigned int i = 0; i < SLOTS_IN_INVENTORY; i++) {
+        worldSave.inventory.slots[i] = (InventorySlot) {
+            serial_decodeUnsignedInt(buffer, &pointer),
+            serial_decodeUnsignedInt(buffer, &pointer)
+        };
+    }
+
+    worldSave.inventory.selectedHotbarSlot = serial_decodeUnsignedInt(buffer, &pointer);
+
     unsigned int targetBlockCount = serial_decodeUnsignedInt(buffer, &pointer);
 
     for (unsigned int i = 0; i < targetBlockCount; i++) {
@@ -173,14 +201,32 @@ WorldSave world_load(char* name) {
         });
     }
 
+    status.worldSave = worldSave;
+
     loadEnd:
 
-    free(buffer);
+    BFile_Close(file);
 
-    return worldSave;
+    return status;
 }
 
 int world_save(WorldSave worldSave, char* name) {
+    char* buffer = malloc(world_getSaveSize(worldSave));
+
+    memcpy(buffer, &worldSave, world_getSaveSize(worldSave));
+
+    unsigned int pointer = sizeof(WorldSave) - sizeof(&(worldSave.world));
+
+    for (unsigned int i = 0; i < worldSave.world.changedBlockCount; i++) {
+        char blockBuffer[sizeof(Block)];
+
+        memcpy(blockBuffer, &(worldSave.world.changedBlocks[i]), sizeof(Block));
+
+        for (unsigned int j = 0; j < sizeof(Block); j++) {
+            buffer[pointer++] = blockBuffer[j];
+        }
+    }
+
     cpu_atomic_start();
 
     int status;
@@ -201,11 +247,13 @@ int world_save(WorldSave worldSave, char* name) {
         goto saveEnd; // Something went wrong
     }
 
-    status = BFile_Write(file, &worldSave, size);
+    status = BFile_Write(file, buffer, size);
 
     BFile_Close(file);
 
     saveEnd:
+
+    free(buffer);
 
     cpu_atomic_end();
 
