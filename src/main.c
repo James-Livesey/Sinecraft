@@ -634,6 +634,7 @@ void worldMenu() {
             case INPUT_CHOICE_CONFIRM:
                 strcpy(worldName, "Test"); // TODO: Add world name choice
 
+                newWorld();
                 startGame();
                 saveWorld();
 
