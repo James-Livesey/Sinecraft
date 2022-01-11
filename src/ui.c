@@ -88,6 +88,7 @@ void ui_inputEvent(char* text, unsigned int* caretPosition, unsigned int maxLeng
                 break;
             }
 
+            // FIXME: Typing before letter dupes letter after next
             for (unsigned int i = 0; i < strlen(string); i++) {
                 for (unsigned int j = maxLength - 2; j > *caretPosition; j--) {
                     text[j + 1] = text[j];
