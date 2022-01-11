@@ -1,10 +1,13 @@
+#include <string.h>
 #include <gint/display.h>
 #include <gint/display-fx.h>
 #include <gint/keyboard.h>
 
 #include "ui.h"
 #include "common.h"
+#include "keys.h"
 
+key_event_t lastKeyEvent;
 int lastFnKey = 0;
 
 void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected) {
@@ -16,6 +19,87 @@ void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected) {
     drect(x1 + 1, y1 + 1, x2 - 1, y2 - 1, selected ? C_BLACK : C_WHITE);
 
     dtext_opt((x1 + x2) / 2, (y1 + y2) / 2, C_INVERT, C_NONE, DTEXT_CENTER, DTEXT_CENTER, text, -1);
+}
+
+void ui_input(int x1, int y1, int x2, int y2, char* text, unsigned int caretPosition, bool selected) {
+    drect_border(x1, y1, x2, y2, C_WHITE, 1, C_BLACK);
+
+    dtext_opt(x1 + 2, (y1 + y2) / 2, C_BLACK, C_NONE, DTEXT_LEFT, DTEXT_CENTER, text, ((x2 - x1) / 6) - 6);
+
+    if (!selected) {
+        return;
+    }
+
+    int caretStart = x1 + 2 + (caretPosition * 6);
+
+    drect(caretStart, ((y1 + y2) / 2) - 4, caretStart + 1, ((y1 + y2) / 2) + 4, C_INVERT);
+}
+
+// `maxLength` should be 1 less than the actual string length to allow for null termination
+void ui_inputEvent(char* text, unsigned int* caretPosition, unsigned int maxLength, bool filenameFormatOnly, bool selected) {
+    if (!selected) {
+        return;
+    }
+
+    switch (lastKeyEvent.key) {
+        case KEY_LEFT:
+            if (*caretPosition == 0) {
+                *caretPosition = strlen(text);
+
+                break;
+            }
+
+            (*caretPosition)--;
+
+            break;
+
+        case KEY_RIGHT:
+            if (*caretPosition >= strlen(text)) {
+                *caretPosition = 0;
+
+                break;
+            }
+
+            (*caretPosition)++;
+
+            break;
+
+        case KEY_DEL:
+            if (*caretPosition == 0) { // Deletion from start
+                (*caretPosition)++;
+            }
+
+            for (unsigned int i = *caretPosition - 1; i < maxLength; i++) {
+                text[i] = text[i + 1];
+            }
+
+            (*caretPosition)--;
+
+            break;
+
+        default:
+            if (*caretPosition == maxLength) {
+                break;
+            }
+
+            char* string = keys_getString(lastKeyEvent.key, lastKeyEvent.alpha, filenameFormatOnly);
+
+            if (strlen(string) == 0) {
+                break;
+            }
+
+            for (unsigned int i = 0; i < strlen(string); i++) {
+                for (unsigned int j = maxLength - 2; j > *caretPosition; j--) {
+                    text[j + 1] = text[j];
+                }
+
+                text[*caretPosition] = string[i];
+
+                (*caretPosition)++;
+            }
+
+            break;
+    }
 }
 
 void ui_progressBar(int x1, int y1, int x2, int y2, double value) {
@@ -56,6 +140,8 @@ void ui_message(char* line1, char* line2, char* line3, char* line4) {
 
 int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
     key_event_t keyEvent = getkey_opt(GETKEY_DEFAULT & ~GETKEY_MENU, NULL);
+
+    lastKeyEvent = keyEvent;
 
     switch (keyEvent.key) {
         case KEY_UP:
@@ -109,6 +195,10 @@ int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
     }
 
     return INPUT_CHOICE_NONE;
+}
+
+key_event_t ui_getKeyEvent() {
+    return lastKeyEvent;
 }
 
 int ui_getFnKey() {

@@ -614,6 +614,39 @@ void startGame() {
     }
 }
 
+void newWorldMenu() {
+    unsigned int focus = 0;
+
+    char worldName[9] = "";
+    unsigned int caretPosition = 0;
+
+    while (true) {
+        dclear(C_WHITE);
+
+        dtext(2, 1, C_BLACK, "Create New World");
+        dhline(10, C_BLACK);
+
+        ui_input(64 - 48, 12, 64 + 48, 12 + 12, worldName, caretPosition, focus == 0);
+
+        dupdate();
+
+        switch (ui_waitForInput(&focus, 0)) {
+            case INPUT_CHOICE_EXIT:
+                return;
+
+            case INPUT_CHOICE_MENU:
+                gint_osmenu();
+
+                break;
+
+            default:
+                ui_inputEvent(worldName, &caretPosition, 8, true, focus == 0);
+
+                break;
+        }
+    }
+}
+
 void worldMenu() {
     unsigned int focus = 0;
 
@@ -654,6 +687,8 @@ void worldMenu() {
                     }
 
                     if (ui_getFnKey() == 3) {
+                        newWorldMenu();
+
                         newWorld();
                     }
 
