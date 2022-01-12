@@ -27,7 +27,7 @@ void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected) {
 void ui_input(int x1, int y1, int x2, int y2, char* text, unsigned int caretPosition, bool selected) {
     drect_border(x1, y1, x2, y2, C_WHITE, 1, C_BLACK);
 
-    dtext_opt(x1 + 2, (y1 + y2) / 2, C_BLACK, C_NONE, DTEXT_LEFT, DTEXT_CENTER, text, ((x2 - x1) / 6) - 6);
+    dtext_opt(x1 + 2, (y1 + y2) / 2, C_BLACK, C_NONE, DTEXT_LEFT, DTEXT_CENTER, text, -1);
 
     if (!selected) {
         return;

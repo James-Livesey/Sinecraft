@@ -619,6 +619,7 @@ void newWorldMenu() {
 
     char worldName[9] = "";
     unsigned int caretPosition = 0;
+    unsigned int gameModeChoice = 0;
 
     ui_setModifierState(MODIFIER_STATE_ALPHA_LOCK);
 
@@ -628,11 +629,52 @@ void newWorldMenu() {
         dtext(2, 1, C_BLACK, "Create New World");
         dhline(10, C_BLACK);
 
-        ui_input(64 - 48, 12, 64 + 48, 12 + 12, worldName, caretPosition, focus == 0);
+        dtext_opt(1, 12 + 6, C_BLACK, C_NONE, DTEXT_LEFT, DTEXT_CENTER, "Name", -1);
+        ui_input(60, 12, 126, 12 + 12, worldName, caretPosition, focus == 0);
+
+        char gameModeText[16];
+
+        switch (gameModeChoice) {
+            case 0:
+                strcpy(gameModeText, "Survival");
+                break;
+
+            case 1:
+                strcpy(gameModeText, "Creative");
+                break;
+
+            case 2:
+                strcpy(gameModeText, "Superflat");
+                break;
+        }
+
+        dtext_opt(1, 26 + 6, C_BLACK, C_NONE, DTEXT_LEFT, DTEXT_CENTER, "Game Mode", -1);
+        ui_button(60, 26, 126, 26 + 12, gameModeText, focus == 1);
+
+        switch (gameModeChoice) {
+            case 0:
+                dtext_opt(64, 42, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "Crafting and health", -1);
+                break;
+
+            case 1:
+                dtext_opt(64, 42, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "Infinite inventory", -1);
+                break;
+
+            case 2:
+                dtext_opt(64, 42, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "A flat creative world", -1);
+                break;
+        }
 
         dupdate();
 
-        switch (ui_waitForInput(&focus, 1)) {
+        switch (ui_waitForInput(&focus, 2)) {
+            case INPUT_CHOICE_CONFIRM:
+                if (focus == 1) {
+                    gameModeChoice = (gameModeChoice + 1) % 3;
+                }
+
+                break;
+
             case INPUT_CHOICE_EXIT:
                 return;
 
