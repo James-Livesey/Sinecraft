@@ -620,6 +620,8 @@ void newWorldMenu() {
     char worldName[9] = "";
     unsigned int caretPosition = 0;
 
+    ui_setModifierState(MODIFIER_STATE_ALPHA_LOCK);
+
     while (true) {
         dclear(C_WHITE);
 
@@ -630,7 +632,7 @@ void newWorldMenu() {
 
         dupdate();
 
-        switch (ui_waitForInput(&focus, 0)) {
+        switch (ui_waitForInput(&focus, 1)) {
             case INPUT_CHOICE_EXIT:
                 return;
 

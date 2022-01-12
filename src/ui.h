@@ -13,6 +13,13 @@ enum {
     INPUT_CHOICE_FN
 };
 
+enum {
+    MODIFIER_STATE_NONE,
+    MODIFIER_STATE_SHIFT,
+    MODIFIER_STATE_ALPHA,
+    MODIFIER_STATE_ALPHA_LOCK
+};
+
 void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected);
 
 void ui_input(int x1, int y1, int x2, int y2, char* text, unsigned int caretPosition, bool selected);
@@ -28,5 +35,8 @@ void ui_message(char* line1, char* line2, char* line3, char* line4);
 int ui_waitForInput(unsigned int* focus, unsigned int controlCount);
 key_event_t ui_getKeyEvent();
 int ui_getFnKey();
+
+int ui_getModifierState();
+void ui_setModifierState(int state);
 
 #endif

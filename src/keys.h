@@ -8,6 +8,6 @@ typedef struct {
     char* string;
 } KeyStringMap;
 
-char* keys_getString(int keyCode, bool alpha, bool filenameFormatOnly);
+char* keys_getString(int keyCode, bool shift, bool alpha, bool filenameFormatOnly);
 
 #endif

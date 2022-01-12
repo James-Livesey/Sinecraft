@@ -9,6 +9,9 @@
 
 key_event_t lastKeyEvent;
 int lastFnKey = 0;
+int modifierState = MODIFIER_STATE_NONE;
+int immediateModifierState = MODIFIER_STATE_NONE;
+int internalModifierState = MODIFIER_STATE_NONE;
 
 void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected) {
     dline(x1 + 1, y1, x2 - 1, y1, C_BLACK);
@@ -82,17 +85,24 @@ void ui_inputEvent(char* text, unsigned int* caretPosition, unsigned int maxLeng
                 break;
             }
 
-            char* string = keys_getString(lastKeyEvent.key, lastKeyEvent.alpha, filenameFormatOnly);
+            char* string = keys_getString(
+                lastKeyEvent.key,
+                modifierState == MODIFIER_STATE_SHIFT,
+                modifierState == MODIFIER_STATE_ALPHA || modifierState == MODIFIER_STATE_ALPHA_LOCK,
+                filenameFormatOnly
+            );
 
             if (strlen(string) == 0) {
                 break;
             }
 
-            // FIXME: Typing before letter dupes letter after next
             for (unsigned int i = 0; i < strlen(string); i++) {
                 for (unsigned int j = maxLength - 2; j > *caretPosition; j--) {
                     text[j + 1] = text[j];
                 }
+
+                text[*caretPosition + 1] = text[*caretPosition];
+                text[maxLength] = 0; // Ensure null pointer at end of text
 
                 text[*caretPosition] = string[i];
 
@@ -140,11 +150,33 @@ void ui_message(char* line1, char* line2, char* line3, char* line4) {
 }
 
 int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
-    key_event_t keyEvent = getkey_opt(GETKEY_DEFAULT & ~GETKEY_MENU, NULL);
+    key_event_t keyEvent = getkey_opt(GETKEY_DEFAULT & ~GETKEY_MENU & ~GETKEY_MOD_SHIFT & ~GETKEY_MOD_ALPHA, NULL);
+    int choice = INPUT_CHOICE_NONE;
 
     lastKeyEvent = keyEvent;
 
     switch (keyEvent.key) {
+        case KEY_SHIFT:
+            internalModifierState = MODIFIER_STATE_SHIFT;
+            break;
+
+        case KEY_ALPHA:
+            if (immediateModifierState == MODIFIER_STATE_ALPHA_LOCK) {
+                internalModifierState = MODIFIER_STATE_NONE;
+
+                break;
+            }
+
+            if (immediateModifierState == MODIFIER_STATE_SHIFT) {
+                internalModifierState = MODIFIER_STATE_ALPHA_LOCK;
+
+                break;
+            }
+
+            internalModifierState = MODIFIER_STATE_ALPHA;
+
+            break;
+
         case KEY_UP:
             if (*focus == 0) {
                 *focus = controlCount - 1;
@@ -166,13 +198,16 @@ int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
             break;
 
         case KEY_LEFT:
-            return INPUT_CHOICE_PREVIOUS;
+            choice = INPUT_CHOICE_PREVIOUS;
+            break;
 
         case KEY_RIGHT:
-            return INPUT_CHOICE_NEXT;
+            choice = INPUT_CHOICE_NEXT;
+            break;
 
         case KEY_EXE:
-            return INPUT_CHOICE_CONFIRM;
+            choice = INPUT_CHOICE_CONFIRM;
+            break;
 
         case KEY_F1:
         case KEY_F2:
@@ -186,16 +221,26 @@ int ui_waitForInput(unsigned int* focus, unsigned int controlCount) {
                 lastFnKey = 0;
             }
 
-            return INPUT_CHOICE_FN;
+            choice = INPUT_CHOICE_FN;
+            break;
 
         case KEY_EXIT:
-            return INPUT_CHOICE_EXIT;
+            choice = INPUT_CHOICE_EXIT;
+            break;
 
         case KEY_MENU:
-            return INPUT_CHOICE_MENU;
+            choice = INPUT_CHOICE_MENU;
+            break;
     }
 
-    return INPUT_CHOICE_NONE;
+    modifierState = immediateModifierState;
+    immediateModifierState = internalModifierState;
+
+    if ((immediateModifierState == MODIFIER_STATE_SHIFT && keyEvent.key != KEY_ALPHA) || immediateModifierState == MODIFIER_STATE_ALPHA) {
+        internalModifierState = MODIFIER_STATE_NONE;
+    }
+
+    return choice;
 }
 
 key_event_t ui_getKeyEvent() {
@@ -204,4 +249,14 @@ key_event_t ui_getKeyEvent() {
 
 int ui_getFnKey() {
     return lastFnKey;
+}
+
+int ui_getModifierState() {
+    return modifierState;
+}
+
+void ui_setModifierState(int state) {
+    modifierState = state;
+    immediateModifierState = state;
+    internalModifierState = state;
 }

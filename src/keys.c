@@ -21,7 +21,11 @@ const KeyStringMap KEY_STRINGS_ALPHA[] = {
     (ksm) {-1, ""}
 };
 
-char* keys_getString(int keyCode, bool alpha, bool filenameFormatOnly) {
+char* keys_getString(int keyCode, bool shift, bool alpha, bool filenameFormatOnly) {
+    if (shift) {
+        return ""; // No shift key string maps implemented yet
+    }
+
     const KeyStringMap* map = alpha ? KEY_STRINGS_ALPHA : KEY_STRINGS;
 
     for (unsigned int i = 0; map[i].keyCode > 0; i++) {
