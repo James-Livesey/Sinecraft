@@ -9,9 +9,9 @@
 
 key_event_t lastKeyEvent;
 int lastFnKey = 0;
-int modifierState = MODIFIER_STATE_NONE;
-int immediateModifierState = MODIFIER_STATE_NONE;
-int internalModifierState = MODIFIER_STATE_NONE;
+int modifierState = MODIFIER_STATE_NONE; // The modifier state that factors next key, should be read by external code
+int immediateModifierState = MODIFIER_STATE_NONE; // The immediate modifier state that resets after next key is pressed
+int internalModifierState = MODIFIER_STATE_NONE; // The modifier state that resets immediately after modifier key is pressed
 
 void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected) {
     dline(x1 + 1, y1, x2 - 1, y1, C_BLACK);
