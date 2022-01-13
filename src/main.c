@@ -663,7 +663,7 @@ bool newWorldMenu() {
                 break;
 
             case 1:
-                dtext_opt(64, 42, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "Infinite inventory", -1);
+                dtext_opt(64, 42, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_TOP, "Unlimited blocks", -1);
                 break;
 
             case 2:
