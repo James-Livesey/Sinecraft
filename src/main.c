@@ -26,6 +26,8 @@
 extern bopti_image_t img_logo;
 extern bopti_image_t img_fn_play;
 extern bopti_image_t img_fn_new;
+extern bopti_image_t img_fn_create;
+extern bopti_image_t img_fn_casing;
 
 Config config;
 World world;
@@ -617,14 +619,15 @@ void startGame() {
     }
 }
 
-void newWorldMenu() {
+bool newWorldMenu() {
     unsigned int focus = 0;
 
-    char worldName[9] = "";
+    char newWorldName[MAX_WORLD_NAME_LENGTH + 1] = ""; // Add 1 for null terminator required for `ui_inputEvent`
     unsigned int caretPosition = 0;
     unsigned int gameModeChoice = 0;
 
     ui_setModifierState(MODIFIER_STATE_ALPHA_LOCK);
+    ui_setCasingState(CASING_STATE_UPPER);
 
     while (true) {
         dclear(C_WHITE);
@@ -633,7 +636,7 @@ void newWorldMenu() {
         dhline(10, C_BLACK);
 
         dtext_opt(1, 12 + 6, C_BLACK, C_NONE, DTEXT_LEFT, DTEXT_CENTER, "Name", -1);
-        ui_input(60, 12, 126, 12 + 12, worldName, caretPosition, focus == 0);
+        ui_input(60, 12, 126, 12 + 12, newWorldName, caretPosition, focus == 0);
 
         char gameModeText[16];
 
@@ -668,6 +671,9 @@ void newWorldMenu() {
                 break;
         }
 
+        ui_functionIndicator(5, &img_fn_casing);
+        ui_functionIndicator(6, &img_fn_create);
+
         dupdate();
 
         switch (ui_waitForInput(&focus, 2)) {
@@ -679,7 +685,35 @@ void newWorldMenu() {
                 break;
 
             case INPUT_CHOICE_EXIT:
-                return;
+                return false;
+
+            case INPUT_CHOICE_FN:
+                if (ui_getFnKey() == 5) {
+                    ui_toggleCasingState();
+                }
+
+                if (ui_getFnKey() == 6) {
+                    if (strlen(newWorldName) == 0) {
+                        showAlert(
+                            "Please enter a",
+                            "name for the new",
+                            "world",
+                            "   Press:[EXE]"
+                        );
+
+                        break;
+                    }
+
+                    worldGenerationType = gameModeChoice == 2 ? WORLD_GENERATION_TYPE_SUPERFLAT : WORLD_GENERATION_TYPE_DEFAULT;
+
+                    inventory.gameMode = gameModeChoice == 0 ? GAME_MODE_SURVIVAL : GAME_MODE_CREATIVE;
+
+                    strncpy(worldName, newWorldName, MAX_WORLD_NAME_LENGTH);
+
+                    return true;
+                }
+
+                break;
 
             case INPUT_CHOICE_MENU:
                 gint_osmenu();
@@ -687,7 +721,7 @@ void newWorldMenu() {
                 break;
 
             default:
-                ui_inputEvent(worldName, &caretPosition, 8, true, focus == 0);
+                ui_inputEvent(newWorldName, &caretPosition, MAX_WORLD_NAME_LENGTH, true, focus == 0);
 
                 break;
         }
@@ -712,7 +746,9 @@ void worldMenu() {
 
         switch (ui_waitForInput(&focus, 0)) {
             case INPUT_CHOICE_CONFIRM:
-                strcpy(worldName, "Test"); // TODO: Add world name choice
+                // TODO: Make this load a selected world, like pressing F1
+
+                strcpy(worldName, "Test");
 
                 newWorld();
                 startGame();
@@ -724,27 +760,33 @@ void worldMenu() {
                 return;
 
             case INPUT_CHOICE_FN:
-                if (ui_getFnKey() == 1 || ui_getFnKey() == 3) { // TODO: Make these keys perform different actions once world storage is done
-                    bool start = true;
-
-                    strcpy(worldName, "Test"); // TODO: Add world name choice
-
+                if (ui_getFnKey() == 1 || ui_getFnKey() == 3) {
                     if (ui_getFnKey() == 1) {
-                        start = loadWorld();
+                        strcpy(worldName, "Test"); // TODO: Add world name that corresponds to selected world
+
+                        bool success = loadWorld();
+
+                        if (!success) {
+                            break;
+                        }
                     }
 
                     if (ui_getFnKey() == 3) {
-                        newWorldMenu();
+                        strcpy(worldName, "World");
+
+                        bool success = newWorldMenu();
+
+                        if (!success) {
+                            break;
+                        }
 
                         newWorld();
                     }
 
-                    if (start) {
-                        startGame();
-                        saveWorld();
+                    startGame();
+                    saveWorld();
 
-                        return;
-                    }
+                    return;
                 }
 
                 break;

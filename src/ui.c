@@ -1,4 +1,5 @@
 #include <string.h>
+#include <ctype.h>
 #include <gint/display.h>
 #include <gint/display-fx.h>
 #include <gint/keyboard.h>
@@ -12,6 +13,7 @@ int lastFnKey = 0;
 int modifierState = MODIFIER_STATE_NONE; // The modifier state that factors next key, should be read by external code
 int immediateModifierState = MODIFIER_STATE_NONE; // The immediate modifier state that resets after next key is pressed
 int internalModifierState = MODIFIER_STATE_NONE; // The modifier state that resets immediately after modifier key is pressed
+int casingState = CASING_STATE_UPPER; // The state for whether characters should be uppercase or lowercase
 
 void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected) {
     dline(x1 + 1, y1, x2 - 1, y1, C_BLACK);
@@ -85,15 +87,23 @@ void ui_inputEvent(char* text, unsigned int* caretPosition, unsigned int maxLeng
                 break;
             }
 
-            char* string = keys_getString(
+            char string[16];
+
+            strcpy(string, keys_getString(
                 lastKeyEvent.key,
                 modifierState == MODIFIER_STATE_SHIFT,
                 modifierState == MODIFIER_STATE_ALPHA || modifierState == MODIFIER_STATE_ALPHA_LOCK,
                 filenameFormatOnly
-            );
+            ));
 
             if (strlen(string) == 0) {
                 break;
+            }
+
+            if (casingState == CASING_STATE_LOWER) {
+                for (unsigned int i = 0; i < strlen(string); i++) {
+                    string[i] = tolower(string[i]);
+                }
             }
 
             for (unsigned int i = 0; i < strlen(string); i++) {
@@ -259,4 +269,24 @@ void ui_setModifierState(int state) {
     modifierState = state;
     immediateModifierState = state;
     internalModifierState = state;
+}
+
+int ui_getCasingState() {
+    return casingState;
+}
+
+void ui_setCasingState(int state) {
+    casingState = state;
+}
+
+void ui_toggleCasingState() {
+    switch (casingState) {
+        case CASING_STATE_UPPER:
+            casingState = CASING_STATE_LOWER;
+            break;
+
+        default:
+            casingState = CASING_STATE_UPPER;
+            break;
+    }
 }

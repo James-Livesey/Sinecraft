@@ -20,6 +20,11 @@ enum {
     MODIFIER_STATE_ALPHA_LOCK
 };
 
+enum {
+    CASING_STATE_UPPER,
+    CASING_STATE_LOWER
+};
+
 void ui_button(int x1, int y1, int x2, int y2, char* text, bool selected);
 
 void ui_input(int x1, int y1, int x2, int y2, char* text, unsigned int caretPosition, bool selected);
@@ -38,5 +43,9 @@ int ui_getFnKey();
 
 int ui_getModifierState();
 void ui_setModifierState(int state);
+
+int ui_getCasingState();
+void ui_setCasingState(int state);
+void ui_toggleCasingState();
 
 #endif

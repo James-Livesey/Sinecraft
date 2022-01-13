@@ -26,6 +26,14 @@ fnsearch.png:
     type: bopti-image
     name: img_fn_search
 
+fncreate.png:
+    type: bopti-image
+    name: img_fn_create
+
+fncasing.png:
+    type: bopti-image
+    name: img_fn_casing
+
 fnpage.png:
     type: bopti-image
     name: img_fn_page

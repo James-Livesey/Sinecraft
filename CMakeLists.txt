@@ -56,6 +56,8 @@ set(ASSETS_fx
     assets-fx/fnnew.png
     assets-fx/fndelete.png
     assets-fx/fnsearch.png
+    assets-fx/fncreate.png
+    assets-fx/fncasing.png
     assets-fx/fnpage.png
     assets-fx/slot.png
     assets-fx/slotselected.png
