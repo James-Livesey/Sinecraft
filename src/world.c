@@ -91,6 +91,7 @@ int world_getBlockTexture(int blockType, int face) {
 WorldSave world_defaultSave() {
     return (WorldSave) {
         .vernum = VERNUM,
+        .worldGenerationType = WORLD_GENERATION_TYPE_DEFAULT,
         .initialCameraPosition = coords_defaultCartesian(),
         .initialCameraHeading = coords_defaultPolar(),
         .inventory = inventory_default(),
@@ -164,6 +165,8 @@ WorldSaveStatus world_load(char* name) {
     // Perform backwards-compatible conversion here
 
     worldSave.vernum = vernum;
+
+    worldSave.worldGenerationType = serial_decodeUnsignedInt(buffer, &pointer);
 
     worldSave.initialCameraPosition = (CartesianVector) {
         serial_decodeDouble(buffer, &pointer),

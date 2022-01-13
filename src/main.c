@@ -32,6 +32,7 @@ World world;
 Camera candidateCamera;
 Inventory inventory;
 char worldName[MAX_WORLD_NAME_LENGTH] = "";
+unsigned int worldGenerationType = WORLD_GENERATION_TYPE_DEFAULT;
 int keypressTimer;
 bool shouldDestroyNextBlock = false;
 bool shouldPlaceNextBlock = false;
@@ -233,6 +234,8 @@ void saveWorld() {
     dupdate();
 
     WorldSave worldSave = world_defaultSave();
+
+    worldSave.worldGenerationType = worldGenerationType;
 
     worldSave.initialCameraPosition = candidateCamera.position;
     worldSave.initialCameraHeading = candidateCamera.heading;

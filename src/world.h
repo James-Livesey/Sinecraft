@@ -24,6 +24,11 @@ enum {
 };
 
 enum {
+    WORLD_GENERATION_TYPE_DEFAULT = 0,
+    WORLD_GENERATION_TYPE_SUPERFLAT = 1
+};
+
+enum {
     WORLD_SAVE_SUCCESS = 0,
     WORLD_SAVE_CANNOT_LOAD = -1,
     WORLD_SAVE_TOO_BIG = -2,
@@ -42,6 +47,7 @@ typedef struct {
 
 typedef struct {
     unsigned int vernum;
+    unsigned int worldGenerationType;
     CartesianVector initialCameraPosition;
     PolarVector initialCameraHeading;
     Inventory inventory;
