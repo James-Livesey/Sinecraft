@@ -5,6 +5,7 @@
 #include <gint/display-fx.h>
 #include <gint/keyboard.h>
 #include <gint/timer.h>
+#include <gint/bfile.h>
 
 #include "flags.h"
 #include "common.h"
@@ -22,6 +23,7 @@
 #define ITEM_SWITCH_SHOW_TIME 300
 #define MESSAGE_SHOW_TIME 300
 #define BLOCK_PLACEMENT_COOLDOWN 20
+#define RESULTS_ON_WORLD_LISTING 5
 
 extern bopti_image_t img_logo;
 extern bopti_image_t img_fn_play;
@@ -47,6 +49,12 @@ int lastDestructionStartTime = 0;
 double destructionProgress = -1;
 Block lastDestructionBlock = {.position = (CartesianVector) {0, 0, 0}, .type = BLOCK_TYPE_AIR};
 int lastPlaceTime = -BLOCK_PLACEMENT_COOLDOWN;
+
+struct WorldListingResults {
+    unsigned int count;
+    char names[RESULTS_ON_WORLD_LISTING][8];
+    unsigned int sizes[RESULTS_ON_WORLD_LISTING];
+};
 
 #ifdef FLAG_PROFILING
 
@@ -728,8 +736,97 @@ bool newWorldMenu() {
     }
 }
 
+unsigned int getWorldCount() {
+    unsigned int count = 0;
+    bool foundFirst = false;
+    int searchHandle;
+
+    while (true) {
+        uint16_t foundPath[30];
+        struct BFile_FileInfo foundFileInfo;
+        int searchStatus = 0;
+
+        if (!foundFirst) {
+            searchStatus = BFile_FindFirst(WORLD_FILE_SEARCH_PATTERN, &searchHandle, foundPath, &foundFileInfo);
+            foundFirst = true;
+        } else {
+            searchStatus = BFile_FindNext(searchHandle, foundPath, &foundFileInfo);
+        }
+
+        if (searchStatus < 0) {
+            break;
+        }
+
+        count++;
+    }
+
+    return count;
+}
+
+struct WorldListingResults getWorldListing(unsigned int offset) {
+    struct WorldListingResults results = {
+        .count = 0
+    };
+
+    int currentIndex = -offset - 1;
+    bool foundFirst = false;
+    int searchHandle;
+
+    while (true) {
+        uint16_t foundPath[30];
+        struct BFile_FileInfo foundFileInfo;
+        int searchStatus;
+
+        currentIndex++;
+
+        if (currentIndex >= RESULTS_ON_WORLD_LISTING) {
+            break;
+        }
+
+        if (!foundFirst) {
+            searchStatus = BFile_FindFirst(WORLD_FILE_SEARCH_PATTERN, &searchHandle, foundPath, &foundFileInfo);
+            foundFirst = true;
+        } else {
+            searchStatus = BFile_FindNext(searchHandle, foundPath, &foundFileInfo);
+        }
+
+        if (currentIndex < 0) {
+            continue;
+        }
+
+        strcpy(results.names[currentIndex], "");
+
+        results.sizes[currentIndex] = 0;
+
+        if (searchStatus < 0) {
+            break;
+        }
+
+        for (unsigned int i = 0; i < 8; i++) {
+            char nextChar = foundPath[i];
+
+            if (nextChar == '.') {
+                break; // Reached extension part
+            }
+
+            results.names[currentIndex][i] = nextChar;
+        }
+
+        results.sizes[currentIndex] = (unsigned int)foundFileInfo.file_size;
+        results.count++;
+    }
+
+    BFile_FindClose(searchHandle);
+
+    return results;
+}
+
 void worldMenu() {
     unsigned int focus = 0;
+    unsigned int scrollPos = 0;
+
+    struct WorldListingResults listing = getWorldListing(scrollPos);
+    unsigned int worldCount = getWorldCount();
 
     while (true) {
         dclear(C_WHITE);
@@ -737,20 +834,55 @@ void worldMenu() {
         dtext(2, 1, C_BLACK, "Select World");
         dhline(10, C_BLACK);
 
-        dtext_opt(64, 32, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_CENTER, "Coming soon!"); // TODO: Implement world storage
+        bool scrollingChanged = false;
 
-        ui_functionIndicator(1, &img_fn_play);
+        while (focus < scrollPos) {
+            scrollPos--;
+            scrollingChanged = true;
+        }
+
+        while (focus > scrollPos + RESULTS_ON_WORLD_LISTING - 1) {
+            scrollPos++;
+            scrollingChanged = true;
+        }
+
+        if (scrollingChanged) {
+            listing = getWorldListing(scrollPos);
+        }
+
+        for (unsigned int i = 0; i < listing.count; i++) {
+            if (i == focus - scrollPos) {
+                drect(0, 12 + (i * 8), 127, 19 + (i * 8), C_BLACK);
+            }
+
+            dtext(6, 12 + (i * 8), C_INVERT, listing.names[i]);
+            dprint(127 - (5 * 6), 12 + (i * 8), C_INVERT, "%d", listing.sizes[i]);
+        }
+
+        if (worldCount == 0) {
+            dtext_opt(64, 32, C_BLACK, C_NONE, DTEXT_CENTER, DTEXT_CENTER, "(No worlds yet!)");
+        } else {
+            ui_functionIndicator(1, &img_fn_play);
+        }
+
         ui_functionIndicator(3, &img_fn_new);
 
         dupdate();
 
-        switch (ui_waitForInput(&focus, 0)) {
+        switch (ui_waitForInput(&focus, worldCount)) {
             case INPUT_CHOICE_CONFIRM:
-                // TODO: Make this load a selected world, like pressing F1
+                if (worldCount == 0) {
+                    break;
+                }
 
-                strcpy(worldName, "Test");
+                strcpy(worldName, listing.names[focus - scrollPos]);
 
-                newWorld();
+                bool success = loadWorld();
+
+                if (!success) {
+                    break;
+                }
+
                 startGame();
                 saveWorld();
 
@@ -762,17 +894,19 @@ void worldMenu() {
             case INPUT_CHOICE_FN:
                 if (ui_getFnKey() == 1 || ui_getFnKey() == 3) {
                     if (ui_getFnKey() == 1) {
-                        strcpy(worldName, "Test"); // TODO: Add world name that corresponds to selected world
+                        if (worldCount == 0) {
+                            break;
+                        }
+
+                        strcpy(worldName, listing.names[focus - scrollPos]);
 
                         bool success = loadWorld();
 
                         if (!success) {
                             break;
                         }
-                    }
-
-                    if (ui_getFnKey() == 3) {
-                        strcpy(worldName, "World");
+                    } else if (ui_getFnKey() == 3) {
+                        strcpy(worldName, "World"); // Just in case world name somehow doesn't get assigned to
 
                         bool success = newWorldMenu();
 

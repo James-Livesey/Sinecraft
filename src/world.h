@@ -7,6 +7,7 @@
 #define MAX_WORLD_NAME_LENGTH 8
 #define WORLD_FILE_PATH_BASE "\\\\fls0\\"
 #define WORLD_FILE_PATH_EXT ".scw"
+#define WORLD_FILE_SEARCH_PATTERN u"\\\\fls0\\*.scw"
 #define MAX_WORLD_SIZE 16 * 1024 // 16 KiB - when changing this, update error message too
 
 enum {
