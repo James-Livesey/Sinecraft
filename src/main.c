@@ -53,7 +53,7 @@ int lastPlaceTime = -BLOCK_PLACEMENT_COOLDOWN;
 
 struct WorldListingResults {
     unsigned int count;
-    char names[RESULTS_ON_WORLD_LISTING][8];
+    char names[RESULTS_ON_WORLD_LISTING][9]; // 1 more to ensure null terminator
     unsigned int sizes[RESULTS_ON_WORLD_LISTING];
 };
 
