@@ -39,6 +39,8 @@ set(SOURCES
     src/crafting.c
     src/inventory.h
     src/inventory.c
+    src/credits.h
+    src/credits.c
     src/profiling.h
     src/profiling.c
     src/main.c

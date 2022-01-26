@@ -18,6 +18,7 @@
 #include "physics.h"
 #include "crafting.h"
 #include "inventory.h"
+#include "credits.h"
 #include "profiling.h"
 
 #define ITEM_SWITCH_SHOW_TIME 300
@@ -970,6 +971,10 @@ void main() {
                 if (focus == 1) {
                     optionsMenu();
                     saveOptions();
+                }
+
+                if (focus == 2) {
+                    showCredits();
                 }
 
                 break;
