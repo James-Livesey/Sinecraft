@@ -19,7 +19,7 @@ bool shouldStop(int linePos) {
 }
 
 void showCredits() {
-    unsigned int scrollPos = 0;
+    int scrollPos = 0;
     unsigned int scrollTick = 0;
     bool autoScroll = true;
 
