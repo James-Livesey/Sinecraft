@@ -38,6 +38,7 @@ typedef struct {
 
 Inventory inventory_default();
 
+void inventory_populateCreative(Inventory* inventory, bool populateItems);
 void inventory_addFromBlockType(Inventory* inventory, unsigned int type);
 bool inventory_removeFromBlockType(Inventory* inventory, unsigned int type);
 
@@ -49,6 +50,7 @@ void inventory_renderSlot(int x, int y, InventorySlot slot, bool selected, bool 
 void inventory_renderRow(Inventory inventory, unsigned int offset, int y, int selected, int source);
 void inventory_renderHotbar(Inventory inventory, bool showItemDetails);
 void inventory_renderSurvival(Inventory inventory, int selected, int source, bool showItemDetails);
+void inventory_renderCreative(Inventory inventory, int selected, int source, bool showItemDetails);
 
 int inventory_handleSelection(int key, int* slot);
 void inventory_open(Inventory* inventory);

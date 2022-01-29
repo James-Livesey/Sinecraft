@@ -31,6 +31,28 @@ Inventory inventory_default() {
     return inventory;
 }
 
+void inventory_populateCreative(Inventory* inventory, bool populateItems) {
+    for (unsigned int i = SLOTS_IN_ROW; i < SLOTS_IN_INVENTORY; i++) {
+        inventory->slots[i].type = BLOCK_TYPE_AIR;
+        inventory->slots[i].count = 1;
+    }
+
+    if (!populateItems) {
+        return;
+    }
+
+    inventory->slots[SLOTS_IN_ROW + 0].type = BLOCK_TYPE_STONE;
+    inventory->slots[SLOTS_IN_ROW + 1].type = BLOCK_TYPE_GRASS;
+    inventory->slots[SLOTS_IN_ROW + 2].type = BLOCK_TYPE_DIRT;
+    inventory->slots[SLOTS_IN_ROW + 3].type = BLOCK_TYPE_COBBLESTONE;
+    inventory->slots[SLOTS_IN_ROW + 4].type = BLOCK_TYPE_PLANK;
+    inventory->slots[SLOTS_IN_ROW + 5].type = BLOCK_TYPE_WOOD;
+    inventory->slots[SLOTS_IN_ROW + 6].type = BLOCK_TYPE_LEAVES;
+    inventory->slots[SLOTS_IN_ROW + 7].type = BLOCK_TYPE_CRAFTING_TABLE;
+    inventory->slots[SLOTS_IN_ROW + 8].type = ITEM_TYPE_WOODEN_AXE;
+    inventory->slots[SLOTS_IN_ROW + 9].type = ITEM_TYPE_STICK;
+}
+
 void inventory_addFromBlockType(Inventory* inventory, unsigned int type) {
     if (type == BLOCK_TYPE_AIR) {
         return;
@@ -151,6 +173,16 @@ void inventory_renderHotbar(Inventory inventory, bool showItemDetails) {
             return;
         }
 
+        if (inventory.gameMode == GAME_MODE_CREATIVE) {
+            dprint_opt(
+                64, 64 - SLOT_HEIGHT - 12, C_INVERT, C_NONE, DTEXT_CENTER, DTEXT_TOP,
+                "%s",
+                items_getItemName(selectedSlot.type)
+            );
+
+            return;
+        }
+
         dprint_opt(
             64, 64 - SLOT_HEIGHT - 12, C_INVERT, C_NONE, DTEXT_CENTER, DTEXT_TOP,
             "%s (%d)",
@@ -173,6 +205,42 @@ void inventory_renderSurvival(Inventory inventory, int selected, int source, boo
 
     if (showItemDetails) {
         dprint(25, 1, C_BLACK, "%s (%d)", items_getItemNameShort(selectedSlot.type), selectedSlot.count);
+    } else {
+        dtext(25, 1, C_BLACK, "Inventory");
+    }
+
+    const int ROW_OFFSET_HEIGHT = SLOT_HEIGHT + 1;
+    const int ROW_Y_VALUES[] = {
+        63 - SLOT_HEIGHT,
+        10 + (ROW_OFFSET_HEIGHT * 2),
+        10 + (ROW_OFFSET_HEIGHT * 1),
+        10
+    };
+
+    for (unsigned int row = 0; row < SLOTS_IN_INVENTORY / SLOTS_IN_ROW; row++) {
+        inventory_renderRow(inventory, row * SLOTS_IN_ROW, ROW_Y_VALUES[row], selected, source);
+    }
+}
+
+void inventory_renderCreative(Inventory inventory, int selected, int source, bool showItemDetails) {
+    drect(22, 0, 104, 63, C_WHITE);
+    dvline(22, C_BLACK);
+    dvline(104, C_BLACK);
+
+    InventorySlot selectedSlot = inventory.slots[source >= 0 ? source : selected];
+
+    if (selectedSlot.count == 0 || selectedSlot.type == BLOCK_TYPE_AIR) {
+        showItemDetails = false;
+    }
+
+    if (showItemDetails) {
+        char* itemName = items_getItemName(selectedSlot.type);
+
+        dtext_opt(25, 1, C_BLACK, C_NONE, DTEXT_LEFT, DTEXT_TOP, itemName, 12);
+
+        if (strlen(itemName) > 12) {
+            dtext(25 + (12 * 6), 1, C_BLACK, ".");
+        }
     } else {
         dtext(25, 1, C_BLACK, "Inventory");
     }
@@ -258,7 +326,12 @@ void inventory_open(Inventory* inventory) {
     bool selectionChanged = false;
 
     while (true) {
-        inventory_renderSurvival(*inventory, selectedSlot, sourceSlot, selectionChanged);
+        if (inventory->gameMode == GAME_MODE_CREATIVE) {
+            inventory_populateCreative(inventory, true);
+            inventory_renderCreative(*inventory, selectedSlot, sourceSlot, selectionChanged);
+        } else {
+            inventory_renderSurvival(*inventory, selectedSlot, sourceSlot, selectionChanged);
+        }
 
         dupdate();
 
@@ -277,7 +350,12 @@ void inventory_open(Inventory* inventory) {
                     InventorySlot temp = inventory->slots[selectedSlot];
 
                     inventory->slots[selectedSlot] = inventory->slots[sourceSlot];
-                    inventory->slots[sourceSlot] = temp;
+
+                    if (inventory->gameMode == GAME_MODE_CREATIVE) {
+                        inventory->slots[sourceSlot] = (InventorySlot) {.type = BLOCK_TYPE_AIR, .count = 0};
+                    } else {
+                        inventory->slots[sourceSlot] = temp;
+                    }
 
                     sourceSlot = -1;
 
@@ -375,6 +453,10 @@ void inventory_openCrafting(Inventory* inventory, bool small) {
 
     if (selectedIndex < 0) {
         canDisplayAny = false;
+    }
+
+    if (inventory->gameMode == GAME_MODE_CREATIVE) {
+        inventory_populateCreative(inventory, false);
     }
 
     while (true) {

@@ -713,6 +713,8 @@ bool newWorldMenu() {
                         break;
                     }
 
+                    newWorld();
+
                     worldGenerationType = gameModeChoice == 2 ? WORLD_GENERATION_TYPE_SUPERFLAT : WORLD_GENERATION_TYPE_DEFAULT;
 
                     inventory.gameMode = gameModeChoice == 0 ? GAME_MODE_SURVIVAL : GAME_MODE_CREATIVE;
@@ -914,8 +916,6 @@ void worldMenu() {
                         if (!success) {
                             break;
                         }
-
-                        newWorld();
                     }
 
                     startGame();
