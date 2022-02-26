@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <gint/display.h>
 #include <gint/display-fx.h>
 
@@ -433,12 +434,23 @@ void camera_render(Camera camera, World world) {
 
     dhline((VIEWPORT_HEIGHT / 2) - (camera.heading.incl * ((float)VIEWPORT_HEIGHT / 60)), C_BLACK);
 
+    GeneratedWorld generatedWorld = world_getGenerated();
     DisplayBlockFaces faces = {.count = 0, .faces = malloc(0)};
 
     blockCurrentlySelected = false;
 
-    for (unsigned int i = 0; i < world.changedBlockCount; i++) {
-        Block* block = &world.changedBlocks[i];
+    for (unsigned int i = 0; i < world.changedBlockCount + generatedWorld.changedBlockCount; i++) {
+        Block* block;
+
+        if (i < world.changedBlockCount) {
+            block = &world.changedBlocks[i];
+        } else {
+            block = &generatedWorld.changedBlocks[i - world.changedBlockCount];
+
+            if (world_blockIsChanged(world, block->position)) {
+                continue;
+            }
+        }
 
         if (block->type == BLOCK_TYPE_AIR) {
             continue; // Don't render air
@@ -478,6 +490,10 @@ void camera_render(Camera camera, World world) {
 
             if (relativePoint.x < 0) {
                 continue; // Don't render when behind camera
+            }
+
+            if (relativePoint.x > MAX_BLOCK_RENDER_DISTANCE ||relativePoint.z > MAX_BLOCK_RENDER_DISTANCE) {
+                continue; // Don't render when too far
             }
 
             #ifdef FLAG_PROFILING

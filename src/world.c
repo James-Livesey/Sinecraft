@@ -19,6 +19,9 @@ const int BLOCK_INFO[] = {
     BLOCK_TYPE_CRAFTING_TABLE, TEXTURE_CRAFTING_TABLE, TEXTURE_CRAFTING_TABLE, TEXTURE_DEFAULT, TEXTURE_CRAFTING_TABLE_TOP, TEXTURE_CRAFTING_TABLE, TEXTURE_CRAFTING_TABLE
 };
 
+GeneratedWorld generatedWorld;
+bool worldHasPreviouslyGenerated = false;
+
 CartesianVector* world_getBlockVertices(Block block) {
     CartesianVector* vertices = malloc(8 * sizeof(CartesianVector));
 
@@ -65,10 +68,26 @@ void world_setBlock(World* world, Block block) {
     world_addBlock(world, block);
 }
 
+bool world_blockIsChanged(World world, CartesianVector position) {
+    for (unsigned int i = 0; i < world.changedBlockCount; i++) {
+        if (coords_equalCartesian(position, world.changedBlocks[i].position)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 Block world_getBlock(World world, CartesianVector position) {
     for (unsigned int i = 0; i < world.changedBlockCount; i++) {
         if (coords_equalCartesian(position, world.changedBlocks[i].position)) {
             return world.changedBlocks[i];
+        }
+    }
+
+    for (unsigned int i = 0; i < generatedWorld.changedBlockCount; i++) {
+        if (coords_equalCartesian(position, generatedWorld.changedBlocks[i].position)) {
+            return generatedWorld.changedBlocks[i];
         }
     }
 
@@ -86,6 +105,38 @@ int world_getBlockTexture(int blockType, int face) {
     }
 
     return TEXTURE_DEFAULT;
+}
+
+void world_generate(bool generationEnabled) {
+    if (worldHasPreviouslyGenerated) {
+        world_unloadGenerated();
+    } else {
+        generatedWorld = (GeneratedWorld)world_default();
+    }
+
+    worldHasPreviouslyGenerated = true;
+
+    if (!generationEnabled) {
+        return;
+    }
+
+    // TODO: Add start of world generation algorithm
+    world_setBlock(&generatedWorld, (Block) {
+        .position = (CartesianVector) {.x = 10, .y = 0, .z = 10},
+        .type = BLOCK_TYPE_PLANK
+    });
+}
+
+void world_unloadGenerated() {
+    if (generatedWorld.changedBlockCount > 0) {
+        free(generatedWorld.changedBlocks);
+    }
+
+    generatedWorld = (GeneratedWorld)world_default();
+}
+
+GeneratedWorld world_getGenerated() {
+    return generatedWorld;
 }
 
 WorldSave world_defaultSave() {

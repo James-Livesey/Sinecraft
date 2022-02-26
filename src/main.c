@@ -244,6 +244,8 @@ void saveWorld() {
 
     dupdate();
 
+    world_unloadGenerated();
+
     WorldSave worldSave = world_defaultSave();
 
     worldSave.worldGenerationType = worldGenerationType;
@@ -494,6 +496,8 @@ void startGame() {
     PhysicsSimulation sim = physics_default(&candidateCamera, &world);
 
     startKeypressTimer();
+
+    world_generate(true);
 
     while (true) {
         candidateCamera.fov = config.fov;

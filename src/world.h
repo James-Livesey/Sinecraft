@@ -46,6 +46,8 @@ typedef struct {
     Block* changedBlocks;
 } World;
 
+typedef World GeneratedWorld;
+
 typedef struct {
     unsigned int vernum;
     unsigned int worldGenerationType;
@@ -63,14 +65,20 @@ typedef struct {
 CartesianVector* world_getBlockVertices(Block block);
 
 World world_default();
+unsigned int world_getSize(World world);
 void world_addBlock(World* world, Block block);
 void world_setBlock(World* world, Block block);
+bool world_blockIsChanged(World world, CartesianVector position);
 Block world_getBlock(World world, CartesianVector position);
 
 WorldSave world_defaultSave();
 unsigned int world_getSaveSize(WorldSave worldSave);
 
 int world_getBlockTexture(int blockType, int face);
+
+void world_generate(bool generationEnabled);
+void world_unloadGenerated();
+GeneratedWorld world_getGenerated();
 
 WorldSaveStatus world_load(char* name);
 int world_save(WorldSave worldSave, char* name);

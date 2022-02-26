@@ -7,6 +7,7 @@
 
 #define MAX_FACE_SELECT_DISTANCE 4
 #define MAX_TEXTURE_RENDER_DISTANCE 6
+#define MAX_BLOCK_RENDER_DISTANCE 12
 
 #define SWAPCOORDS(a, b) {DisplayCoords temp = a; a = b; b = temp;}
 
