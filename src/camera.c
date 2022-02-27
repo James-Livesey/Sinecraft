@@ -1,6 +1,5 @@
 #include <stdlib.h>
 #include <math.h>
-#include <string.h>
 #include <gint/display.h>
 #include <gint/display-fx.h>
 
